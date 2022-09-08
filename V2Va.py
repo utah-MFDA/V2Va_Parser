@@ -19,6 +19,7 @@ iExp  = open(initExpress)
 eExp  = open(endExpress)
 
 libraryPath = "./../component_library/VerilogA/Elibrary/standardCells/"
+libraryPath2= "./../component_library/VerilogA/Elibrary/"
 
 # Load standard cell library
 
@@ -35,7 +36,9 @@ for rowN, row in enumerate(library.iterrows()):
     libStr = '.hdl ' + libraryPath + 'E' + rStr + '.va\n'
     SPfile.write(libStr)
 
-SPfile.write('\n\n')
+SPfile.write('\n')
+
+SPfile.write('*hard coded EChannel, used for wires\n' + '.hdl ' + libraryPath + "EChannel.va\n\n\n")
 
 numberOfComponents = 0
 currentLine = ''

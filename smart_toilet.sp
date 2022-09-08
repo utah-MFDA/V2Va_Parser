@@ -12,6 +12,9 @@
 .hdl ./../component_library/VerilogA/Elibrary/standardCells/Eserpentine_300px_0.va
 .hdl ./../component_library/VerilogA/Elibrary/standardCells/Ediffmix_25px_0.va
 
+*hard coded EChannel, used for wires
+.hdl ./../component_library/VerilogA/Elibrary/standardCells/EChannel.va
+
 
 X0 soln1 soln1c PressurePump pressure=100k 
 X1 soln2 soln2c PressurePump pressure=100k 
