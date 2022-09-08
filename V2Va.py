@@ -32,7 +32,7 @@ for rowN, row in enumerate(library.iterrows()):
     #if rowN == 0:
     #    continue
     rStr = row[1]['Standard_Cell']
-    libStr = '.hdl ' + libraryPath + rStr + '\n'
+    libStr = '.hdl ' + libraryPath + 'E' + rStr + '.va\n'
     SPfile.write(libStr)
 
 SPfile.write('\n\n')
