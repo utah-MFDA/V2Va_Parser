@@ -38,7 +38,8 @@ for rowN, row in enumerate(library.iterrows()):
 
 SPfile.write('\n')
 
-SPfile.write('*hard coded EChannel, used for wires\n' + '.hdl ' + libraryPath2 + "EChannel.va\n\n\n")
+SPfile.write('*hard coded EChannel, used for wires\n' + '.hdl ' + libraryPath2 + "EChannel.va\n")
+SPfile.write('*hard coded Pressure Pump, used for wires\n' + '.hdl ' + libraryPath2 + "EPrPump.va\n\n\n")
 
 numberOfComponents = 0
 currentLine = ''
@@ -101,7 +102,7 @@ for line_num, line in enumerate(Vfile):
             # get length of connection
 
             # string
-            VA_line_str += 'X' + str(numberOfComponents) + ' ' + str(w) + '_0 ' + str(w) + '_1 ' + ' ' + str(w) + '_0c ' + str(w) + '_1c  ' + 'EChannel length='
+            VA_line_str += 'X' + str(numberOfComponents) + ' ' + str(w) + '_0 ' + str(w) + '_1 ' + ' ' + str(w) + '_0c ' + str(w) + '_1c  ' + 'Channel length='
 
             row = wireLenDF.loc[wireLenDF['wire'] == w]
 

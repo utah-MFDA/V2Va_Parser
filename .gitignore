@@ -4,3 +4,6 @@ sxcmd*
 *.valog
 *.pvadir
 *.st*
+*.ic*
+*.tr*
+*.pa*
