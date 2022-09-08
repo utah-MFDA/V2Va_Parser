@@ -2,15 +2,15 @@
 
 .option post=1
 
-.hdl ./../component_library/VerilogA/Elibrary/standardCellsvalve_20px_1
-.hdl ./../component_library/VerilogA/Elibrary/standardCellsserpentine_25px_0
-.hdl ./../component_library/VerilogA/Elibrary/standardCellsserpentine_50px_0
-.hdl ./../component_library/VerilogA/Elibrary/standardCellsserpentine_75px_0
-.hdl ./../component_library/VerilogA/Elibrary/standardCellsserpentine_100px_0
-.hdl ./../component_library/VerilogA/Elibrary/standardCellsserpentine_150px_0
-.hdl ./../component_library/VerilogA/Elibrary/standardCellsserpentine_200px_0
-.hdl ./../component_library/VerilogA/Elibrary/standardCellsserpentine_300px_0
-.hdl ./../component_library/VerilogA/Elibrary/standardCellsdiffmix_25px_0
+.hdl ./../component_library/VerilogA/Elibrary/standardCells/valve_20px_1
+.hdl ./../component_library/VerilogA/Elibrary/standardCells/serpentine_25px_0
+.hdl ./../component_library/VerilogA/Elibrary/standardCells/serpentine_50px_0
+.hdl ./../component_library/VerilogA/Elibrary/standardCells/serpentine_75px_0
+.hdl ./../component_library/VerilogA/Elibrary/standardCells/serpentine_100px_0
+.hdl ./../component_library/VerilogA/Elibrary/standardCells/serpentine_150px_0
+.hdl ./../component_library/VerilogA/Elibrary/standardCells/serpentine_200px_0
+.hdl ./../component_library/VerilogA/Elibrary/standardCells/serpentine_300px_0
+.hdl ./../component_library/VerilogA/Elibrary/standardCells/diffmix_25px_0
 
 
 X0 soln1 soln1c PressurePump pressure=100k 
