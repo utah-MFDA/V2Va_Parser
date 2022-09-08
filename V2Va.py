@@ -18,12 +18,24 @@ SPfile= open(outFile_sp, '+w')
 iExp  = open(initExpress)
 eExp  = open(endExpress)
 
+libraryPath = "./../component_library/VerilogA/Elibrary/standardCells"
+
 # Load standard cell library
 
 library = pd.read_csv(library_csv)
 wireLenDF = pd.read_excel(inFile_lengths)
 
 SPfile.write(''.join(iExp.readlines()))
+
+# import library files
+for rowN, row in enumerate(library.iterrows()):
+    #if rowN == 0:
+    #    continue
+    rStr = row[1]['Standard_Cell']
+    libStr = '.hdl ' + libraryPath + rStr + '\n'
+    SPfile.write(libStr)
+
+SPfile.write('\n\n')
 
 numberOfComponents = 0
 currentLine = ''

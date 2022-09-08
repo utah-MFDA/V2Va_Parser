@@ -2,6 +2,17 @@
 
 .option post=1
 
+.hdl ./../component_library/VerilogA/Elibrary/standardCellsvalve_20px_1
+.hdl ./../component_library/VerilogA/Elibrary/standardCellsserpentine_25px_0
+.hdl ./../component_library/VerilogA/Elibrary/standardCellsserpentine_50px_0
+.hdl ./../component_library/VerilogA/Elibrary/standardCellsserpentine_75px_0
+.hdl ./../component_library/VerilogA/Elibrary/standardCellsserpentine_100px_0
+.hdl ./../component_library/VerilogA/Elibrary/standardCellsserpentine_150px_0
+.hdl ./../component_library/VerilogA/Elibrary/standardCellsserpentine_200px_0
+.hdl ./../component_library/VerilogA/Elibrary/standardCellsserpentine_300px_0
+.hdl ./../component_library/VerilogA/Elibrary/standardCellsdiffmix_25px_0
+
+
 X0 soln1 soln1c PressurePump pressure=100k 
 X1 soln2 soln2c PressurePump pressure=100k 
 X2 soln3 soln3c PressurePump pressure=100k 
