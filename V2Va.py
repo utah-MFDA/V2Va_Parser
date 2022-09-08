@@ -18,7 +18,7 @@ SPfile= open(outFile_sp, '+w')
 iExp  = open(initExpress)
 eExp  = open(endExpress)
 
-libraryPath = "./../component_library/VerilogA/Elibrary/standardCells"
+libraryPath = "./../component_library/VerilogA/Elibrary/standardCells/"
 
 # Load standard cell library
 
