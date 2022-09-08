@@ -7,6 +7,7 @@ inFile_Verilog = "smart_toilet.v"
 inFile_lengths = "smart_toilet_lengths.xlsx"
 library_csv =    "StandardCellLibrary.csv"
 outFile_sp     = inFile_Verilog[:-2] + '.sp'
+solnFile       = "solutionFile.csv"
 
 initExpress    = "initExpression_V2VA"
 endExpress     = "endExpression_V2VA"
@@ -26,157 +27,176 @@ libraryPath2= "./../component_library/VerilogA/Elibrary/"
 library = pd.read_csv(library_csv)
 wireLenDF = pd.read_excel(inFile_lengths)
 
-SPfile.write(''.join(iExp.readlines()))
+# load solution concentrations
+solnDF = pd.read_csv(solnFile)
 
-# import library files
-for rowN, row in enumerate(library.iterrows()):
-    #if rowN == 0:
-    #    continue
-    rStr = row[1]['Standard_Cell']
-    libStr = '.hdl ' + libraryPath + 'E' + rStr + '.va\n'
-    SPfile.write(libStr)
+for soln in solnDF.iterrows():
+    Vfile = open(inFile_Verilog)
+    iExp  = open(initExpress)
+    eExp  = open(endExpress)
 
-SPfile.write('\n')
-
-SPfile.write('*hard coded EChannel, used for wires\n' + '.hdl ' + libraryPath2 + "EChannel.va\n")
-SPfile.write('*hard coded Pressure Pump, used for wires\n' + '.hdl ' + libraryPath2 + "EPrPump.va\n\n\n")
-
-numberOfComponents = 0
-currentLine = ''
-wireList    = {}
-outputWords = []
-
-
-# get line
-for line_num, line in enumerate(Vfile):
-
-    if len(line) > 0 and not(line == '\n'):
-        if not line.rstrip()[-1] == ';':
-            # append to current line
-            # remove comments
-            if '//' in line:
-                line = line.split('//')[0]
-            currentLine += line
-            continue
-        else:
-            # pass to parser
-            currentLine += line
-            line = currentLine
-    else:
-        continue
-
-    # remove inital whitespace
-    line = line.lstrip(' ').replace(';', '').replace('\n', '')
-    vars = line.split(' ')[0]
- 
-    VA_line_str = ''
-
-
-    if vars == 'input':
-
-        # create pump devices
-        # we will assume pressure pumping devices
-        params = line.replace('input ', '').replace(' ', '').split(',')
-        for p in params:
-            VA_line_str += 'X' + str(numberOfComponents) + ' ' + str(p) + ' ' + str(p) + 'c PressurePump pressure=100k \n'
-            numberOfComponents += 1
-        
-        VA_line_str += '\n'
-
-    elif vars == 'output':
-        outputLine = line.replace('output ', '')
-        for out in outputLine.replace(' ', '').split(','):
-            outputWords.append(out)
-
-    elif vars == 'module':
-        pass
+    SPfile = open(inFile_Verilog[:-2] + '_' + soln[1].loc['inlet'] + '.sp', '+w')
     
-    elif vars == 'wire':
-        # create channel modules
-        wires = line.replace('wire ', '').replace(' ', '').split(',')
-        
-        #
-        init_wire_string = '*Declared wires'
-        
-        for w in wires:
-            # get length of connection
+    SPfile.write(''.join(iExp.readlines()))
 
-            # string
-            VA_line_str += 'X' + str(numberOfComponents) + ' ' + str(w) + '_0 ' + str(w) + '_1 ' + ' ' + str(w) + '_0c ' + str(w) + '_1c  ' + 'Channel length='
+    # import library files
+    for rowN, row in enumerate(library.iterrows()):
+        #if rowN == 0:
+        #    continue
+        rStr = row[1]['Standard_Cell']
+        libStr = '.hdl ' + libraryPath + 'E' + rStr + '.va\n'
+        SPfile.write(libStr)
 
-            row = wireLenDF.loc[wireLenDF['wire'] == w]
+    SPfile.write('\n')
 
-            wireLength = row.iloc[0,1]
+    SPfile.write('*hard coded EChannel, used for wires\n' + '.hdl ' + libraryPath2 + "EChannel.va\n")
+    SPfile.write('*hard coded Pressure Pump, used for wires\n' + '.hdl ' + libraryPath2 + "EPrPump.va\n\n\n")
 
-            VA_line_str += str(wireLength) + '\n'
-
-            outFile_sp
-
-            wireList[w] = 0
-
-            numberOfComponents += 1
-        #pass
-    elif vars == 'endmodule':
-        pass
-
-
-    # variable is a standard cell
-    else:
-        #line_var = line.lstrip().split(' ')[0]
-
-        # check if in library
-        if (library['Standard_Cell'].eq(vars)).any():
-            standardCell = vars[0]
-        
-            ioPara = ''.join(line.replace('  ', ' ').split(' ')[2:])
-
-            io_expression = False
-            connectionWord= False
-            portPhrase = ''
-            ports      = []
-
-            for char in ioPara:
-                if not io_expression and not connectionWord and char == '.':
-                    io_expression = True
-                elif io_expression and not connectionWord and char == '(':
-                    #Start connection word
-                    io_expression = False
-                    connectionWord = True
-                elif not io_expression and connectionWord and char == ')':
-                    #end of port word
-                    io_expression = False
-                    connectionWord= False
-                    ports.append(portPhrase)
-                    portPhrase = ''
-                elif not io_expression and connectionWord:
-                    portPhrase += char
-
-            VA_line_str += 'X' + str(numberOfComponents) + ' '
-            VA_line_str_chem = ''
-
-            for p in ports:
-                if p in wireList.keys():
-                    VA_line_str += str(p) + '_' + str(wireList[p]) + ' '
-                    VA_line_str_chem += str(p) + '_' + str(wireList[p]) + 'c '
-                    wireList[p] += 1
-                else:
-                    if p in outputWords:
-                        VA_line_str += '0 '
-                    else:
-                        VA_line_str += str(p) + ' '
-                    VA_line_str_chem += str(p) + 'c '
-
-                
-            VA_line_str += VA_line_str_chem + vars + '\n'
-
-            numberOfComponents += 1
-
-        else:
-            print("String: " + vars + " line number: " + str(line_num) + " not in library.")
-
-    # Write line to file
-    SPfile.write(VA_line_str)
-    # refresh line every pass
+    numberOfComponents = 0
     currentLine = ''
+    wireList    = {}
+    outputWords = []
+    probeList   = {}
 
-SPfile.write(''.join(eExp.readlines()))
+
+
+    # get line
+    for line_num, line in enumerate(Vfile):
+
+        if len(line) > 0 and not(line == '\n'):
+            if not line.rstrip()[-1] == ';':
+                # append to current line
+                # remove comments
+                if '//' in line:
+                    line = line.split('//')[0]
+                currentLine += line
+                continue
+            else:
+                # pass to parser
+                currentLine += line
+                line = currentLine
+        else:
+            continue
+
+        # remove inital whitespace
+        line = line.lstrip(' ').replace(';', '').replace('\n', '')
+        vars = line.split(' ')[0]
+    
+        VA_line_str = ''
+
+
+        if vars == 'input':
+
+            # create pump devices
+            # we will assume pressure pumping devices
+            params = line.replace('input ', '').replace(' ', '').split(',')
+            for p in params:
+                VA_line_str += 'X' + str(numberOfComponents) + ' ' + str(p) + ' ' + str(p) + 'c PressurePump pressure=100k '
+                if str(p) == soln[1].loc['inlet']:
+                    VA_line_str += 'chemConcentration=' + str(soln[1].loc['solutionC']) + ' '
+                VA_line_str += '\n'
+                numberOfComponents += 1
+            
+            VA_line_str += '\n'
+
+        elif vars == 'output':
+            outputLine = line.replace('output ', '')
+            for out in outputLine.replace(' ', '').split(','):
+                outputWords.append(out)
+
+        elif vars == 'module':
+            pass
+        
+        elif vars == 'wire':
+            # create channel modules
+            wires = line.replace('wire ', '').replace(' ', '').split(',')
+            
+            #
+            init_wire_string = '*Declared wires'
+            
+            for w in wires:
+                # get length of connection
+
+                # string
+                VA_line_str += 'X' + str(numberOfComponents) + ' ' + str(w) + '_0 ' + str(w) + '_1 ' + ' ' + str(w) + '_0c ' + str(w) + '_1c  ' + 'Channel length='
+
+                row = wireLenDF.loc[wireLenDF['wire'] == w]
+
+                wireLength = row.iloc[0,1]
+
+                VA_line_str += str(wireLength) + '\n'
+
+                outFile_sp
+
+                wireList[w] = 0
+
+                numberOfComponents += 1
+            #pass
+        elif vars == 'endmodule':
+            pass
+
+
+        # variable is a standard cell
+        else:
+            #line_var = line.lstrip().split(' ')[0]
+
+            # check if in library
+            if (library['Standard_Cell'].eq(vars)).any():
+                standardCell = vars[0]
+            
+                ioPara = ''.join(line.replace('  ', ' ').split(' ')[2:])
+
+                io_expression = False
+                connectionWord= False
+                portPhrase = ''
+                ports      = []
+
+                for char in ioPara:
+                    if not io_expression and not connectionWord and char == '.':
+                        io_expression = True
+                    elif io_expression and not connectionWord and char == '(':
+                        #Start connection word
+                        io_expression = False
+                        connectionWord = True
+                    elif not io_expression and connectionWord and char == ')':
+                        #end of port word
+                        io_expression = False
+                        connectionWord= False
+                        ports.append(portPhrase)
+                        portPhrase = ''
+                    elif not io_expression and connectionWord:
+                        portPhrase += char
+
+                VA_line_str += 'X' + str(numberOfComponents) + ' '
+                VA_line_str_chem = ''
+
+                for p in ports:
+                    if p in wireList.keys():
+                        VA_line_str += str(p) + '_' + str(wireList[p]) + ' '
+                        VA_line_str_chem += str(p) + '_' + str(wireList[p]) + 'c '
+                        wireList[p] += 1
+                    else:
+                        if p in outputWords:
+                            VA_line_str += '0 '
+                        else:
+                            VA_line_str += str(p) + ' '
+                        VA_line_str_chem += str(p) + 'c '
+
+                # probes for mixer
+                #if vars == 'diffmix_25px_0':
+                    
+                #    probeList['X'+str(numberOfComponents)]
+                    
+                VA_line_str += VA_line_str_chem + vars + '\n'
+
+                numberOfComponents += 1
+
+            else:
+                print("String: " + vars + " line number: " + str(line_num) + " not in library.")
+
+        # Write line to file
+        SPfile.write(VA_line_str)
+        # refresh line every pass
+        currentLine = ''
+
+    SPfile.write(''.join(eExp.readlines()))
