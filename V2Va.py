@@ -38,7 +38,7 @@ for rowN, row in enumerate(library.iterrows()):
 
 SPfile.write('\n')
 
-SPfile.write('*hard coded EChannel, used for wires\n' + '.hdl ' + libraryPath + "EChannel.va\n\n\n")
+SPfile.write('*hard coded EChannel, used for wires\n' + '.hdl ' + libraryPath2 + "EChannel.va\n\n\n")
 
 numberOfComponents = 0
 currentLine = ''
