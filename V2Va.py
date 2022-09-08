@@ -101,7 +101,7 @@ for line_num, line in enumerate(Vfile):
             # get length of connection
 
             # string
-            VA_line_str += 'X' + str(numberOfComponents) + ' ' + str(w) + '_0 ' + str(w) + '_1 ' + 'EChannel length='
+            VA_line_str += 'X' + str(numberOfComponents) + ' ' + str(w) + '_0 ' + str(w) + '_1 ' + ' ' + str(w) + '_0c ' + str(w) + '_1c  ' + 'EChannel length='
 
             row = wireLenDF.loc[wireLenDF['wire'] == w]
 
