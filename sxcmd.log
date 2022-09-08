@@ -1,0 +1,152 @@
+### Custom WaveView ADV log file, revision S-2021.09 (build Aug 22, ) ###
+### created at 13:38:40 on Thu Sep  8 2022 (Linux AMD64) ###
+### Host Name: lab2-15.eng.utah.edu   User ID: u1146591   PID: 875687   ###
+wv_start_log
+# (0) running in waveview only mode
+# (0) SW_SX_PERL_LIB defined
+# (0) SW_SX_TCL_LIB defined
+# (0) HOME defined
+wv_move_window {Custom WaveView} {} 1 29
+wv_select_window {Custom WaveView} 
+#Creating design 'cx_design'...
+#Design 'cx_design' cleared
+wv_resize_window {Custom WaveView} 1034 586
+#Map file '/home/u1146591/Github/V2Va_Parser/smart_toilet.sp' to logical library 'CX_WORK:SPICE'
+#[Time Span : 1662665923s CPU Time : 0.28s]
+##1 : Parsing design file 'smart_toilet.sp'
+#WARNING[NCR]: [smart_toilet.sp:36] Netlist line not CR ended at end of file 
+#WARNING[NED]: [smart_toilet.sp:36] .END deck is missing 
+##2 : Parsing design file 'smart_toilet.sp'
+#WARNING[FNF]: [smart_toilet.sp:5] File './../component_library/VerilogA/Elibrary/standardCellsvalve_20px_1' is not found. 
+#WARNING[FNF]: [smart_toilet.sp:6] File './../component_library/VerilogA/Elibrary/standardCellsserpentine_25px_0' is not found. 
+#WARNING[FNF]: [smart_toilet.sp:7] File './../component_library/VerilogA/Elibrary/standardCellsserpentine_50px_0' is not found. 
+#WARNING[FNF]: [smart_toilet.sp:8] File './../component_library/VerilogA/Elibrary/standardCellsserpentine_75px_0' is not found. 
+#WARNING[FNF]: [smart_toilet.sp:9] File './../component_library/VerilogA/Elibrary/standardCellsserpentine_100px_0' is not found. 
+#WARNING[FNF]: [smart_toilet.sp:10] File './../component_library/VerilogA/Elibrary/standardCellsserpentine_150px_0' is not found. 
+#WARNING[FNF]: [smart_toilet.sp:11] File './../component_library/VerilogA/Elibrary/standardCellsserpentine_200px_0' is not found. 
+#WARNING[FNF]: [smart_toilet.sp:12] File './../component_library/VerilogA/Elibrary/standardCellsserpentine_300px_0' is not found. 
+#WARNING[FNF]: [smart_toilet.sp:13] File './../component_library/VerilogA/Elibrary/standardCellsdiffmix_25px_0' is not found. 
+#WARNING[NGN]: [smart_toilet.sp:0] Ground node missing 
+#Compile Finished. [Time Span : 0s CPU Time : 0.01s]
+#Elaboration Finished.(Pkg) [Time Span : 0s CPU Time : 0.00s]
+#Total Error: 0, Warning: 12
+#Elaboration Finished.(tmp) [Time Span : 0s CPU Time : 0.00s]
+#Creating configuration 'smart_toilet.sp:topcell:default'
+#Elaboration Finished.(UCFG) [Time Span : 0s CPU Time : 0.00s]
+wv_create_design smart_toilet.sp
+wv_sim_type hspice
+wv_sim_option smart_toilet.sp -spice smart_toilet.sp
+wv_open_dv
+wv_resize_window {Custom WaveView} 1288 586
+wv_resize_browser {Custom WaveView} {} {WV.Browser} 250 443
+wv_resize_browser {Custom WaveView} {} {designview 1:1} 1028 439
+wv_resize_browser {Custom WaveView} {} {designview 1:1} 1028 417
+wv_resize_browser {Custom WaveView} {} {WV.Browser} 250 812
+wv_resize_browser {Custom WaveView} {} {designview 1(smart_toilet.sp):1} 781 786
+wv_select_browser_item {topcell}
+wv_double_click_browser_item {topcell}
+wv_select_waveview 1 {designview 1}
+wv_cv_switch_scope {topcell}
+wv_cv_zoom_in 486 504
+wv_cv_zoom_in 486 504
+wv_cv_zoom_in 486 504
+wv_cv_zoom_in 333 518
+wv_cv_zoom_in 333 518
+wv_cv_zoom_in 332 518
+wv_cv_zoom_in 332 518
+wv_cv_zoom_in 332 518
+wv_cv_zoom_in 332 518
+wv_cv_zoom_in 332 518
+wv_cv_zoom_out 332 516
+wv_select_waveview 1 {designview 1}
+wv_select_waveview 1 {designview 1}
+wv_cv_zoom_in 154 280
+wv_cv_zoom_in 157 280
+wv_cv_zoom_in 157 280
+wv_cv_zoom_in 160 282
+wv_cv_zoom_out 160 282
+wv_cv_zoom_out 160 282
+wv_cv_zoom_out 160 282
+wv_cv_zoom_out 160 282
+wv_cv_zoom_out 160 282
+wv_cv_zoom_out 160 282
+wv_cv_zoom_out 160 282
+wv_cv_zoom_out 160 282
+wv_cv_zoom_out 160 282
+wv_cv_zoom_in 410 380
+wv_cv_zoom_in 410 380
+wv_connview_scroll_move -1.000000 -1.000000 50957.933594 34086.800781
+wv_select_waveview 1 {designview 1}
+wv_connview_scroll_move -1.000000 -1.000000 49988.667969 34086.800781
+wv_select_waveview 1 {designview 1}
+wv_connview_scroll_move -1.000000 -1.000000 45696.000000 34086.800781
+wv_select_waveview 1 {designview 1}
+wv_connview_scroll_move -1.000000 -1.000000 40849.464844 34086.800781
+wv_select_waveview 1 {designview 1}
+wv_connview_scroll_move -1.000000 -1.000000 35449.000000 34086.800781
+wv_select_waveview 1 {designview 1}
+wv_connview_scroll_move -1.000000 -1.000000 30740.933594 34086.800781
+wv_select_waveview 1 {designview 1}
+wv_connview_scroll_move -1.000000 -1.000000 27694.533203 34086.800781
+wv_select_waveview 1 {designview 1}
+wv_connview_scroll_move -1.000000 -1.000000 26309.800781 34086.800781
+wv_select_waveview 1 {designview 1}
+wv_connview_scroll_move -1.000000 -1.000000 25894.400391 34086.800781
+wv_select_waveview 1 {designview 1}
+wv_connview_scroll_move -1.000000 -1.000000 25479.000000 34086.800781
+wv_select_waveview 1 {designview 1}
+wv_connview_scroll_move -1.000000 -1.000000 24786.599609 34086.800781
+wv_select_waveview 1 {designview 1}
+wv_connview_scroll_move -1.000000 -1.000000 23263.400391 34086.800781
+wv_select_waveview 1 {designview 1}
+wv_connview_scroll_move -1.000000 -1.000000 18278.400391 34086.800781
+wv_select_waveview 1 {designview 1}
+wv_connview_scroll_move -1.000000 -1.000000 11631.733398 34086.800781
+wv_select_waveview 1 {designview 1}
+wv_connview_scroll_move -1.000000 -1.000000 5400.466797 34086.800781
+wv_select_waveview 1 {designview 1}
+wv_connview_scroll_move -1.000000 -1.000000 0.000000 34086.800781
+wv_select_waveview 1 {designview 1}
+wv_connview_scroll_move -1.000000 -1.000000 51265.800781 34086.800781
+wv_select_waveview 1 {designview 1}
+wv_connview_scroll_move -1.000000 -1.000000 0.000000 34086.800781
+wv_select_waveview 1 {designview 1}
+wv_connview_scroll_move -1.000000 -1.000000 830.866638 34086.800781
+wv_select_waveview 1 {designview 1}
+wv_connview_scroll_move -1.000000 -1.000000 2492.533447 34086.800781
+wv_select_waveview 1 {designview 1}
+wv_connview_scroll_move -1.000000 -1.000000 3461.800049 34086.800781
+wv_select_waveview 1 {designview 1}
+wv_connview_scroll_move -1.000000 -1.000000 4985.000000 34086.800781
+wv_select_waveview 1 {designview 1}
+wv_connview_scroll_move -1.000000 -1.000000 5815.866699 34086.800781
+wv_select_waveview 1 {designview 1}
+wv_connview_scroll_move -1.000000 -1.000000 6092.799805 34086.800781
+wv_select_waveview 1 {designview 1}
+wv_connview_scroll_move -1.000000 -1.000000 5954.333496 34086.800781
+wv_select_waveview 1 {designview 1}
+wv_connview_scroll_move -1.000000 -1.000000 5954.333496 34086.800781
+wv_connview_scroll_move -1.000000 -1.000000 5123.466797 34086.800781
+wv_select_waveview 1 {designview 1}
+wv_connview_scroll_move -1.000000 -1.000000 4431.133301 34086.800781
+wv_select_waveview 1 {designview 1}
+wv_connview_scroll_move -1.000000 -1.000000 3461.800049 34086.800781
+wv_select_waveview 1 {designview 1}
+wv_connview_scroll_move -1.000000 -1.000000 2492.533447 34086.800781
+wv_select_waveview 1 {designview 1}
+wv_connview_scroll_move -1.000000 -1.000000 1523.199951 34086.800781
+wv_select_waveview 1 {designview 1}
+wv_connview_scroll_move -1.000000 -1.000000 1107.800049 34086.800781
+wv_select_waveview 1 {designview 1}
+wv_connview_scroll_move -1.000000 -1.000000 969.333313 34086.800781
+wv_select_waveview 1 {designview 1}
+wv_connview_scroll_move -1.000000 -1.000000 553.866638 34086.800781
+wv_select_waveview 1 {designview 1}
+wv_connview_scroll_move -1.000000 -1.000000 0.000000 34086.800781
+wv_select_waveview 1 {designview 1}
+wv_close_window {Custom WaveView} 
+wv_move_window {Confirmation} {} 507 611
+wv_move_window {Confirmation} {} 517 615
+wv_select_dialog {Confirmation} 
+#wv_press_button {Confirmation} {} {Ok} 
+#*WARNING* Can not remove '/home/u1146591/.cx_hostport/.cx_hostport_lab2-15.eng.utah.edu_875687'.
