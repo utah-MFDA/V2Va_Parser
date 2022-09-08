@@ -85,7 +85,7 @@ for line_num, line in enumerate(Vfile):
 
     elif vars == 'output':
         outputLine = line.replace('output ', '')
-        for out in line.replace(' ', '').split(','):
+        for out in outputLine.replace(' ', '').split(','):
             outputWords.append(out)
 
     elif vars == 'module':
@@ -160,7 +160,10 @@ for line_num, line in enumerate(Vfile):
                     VA_line_str_chem += str(p) + '_' + str(wireList[p]) + 'c '
                     wireList[p] += 1
                 else:
-                    VA_line_str += str(p) + ' '
+                    if p in outputWords:
+                        VA_line_str += '0 '
+                    else:
+                        VA_line_str += str(p) + ' '
                     VA_line_str_chem += str(p) + 'c '
 
                 

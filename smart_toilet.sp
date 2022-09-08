@@ -36,6 +36,6 @@ X13 soln3 connect4_0 soln3c connect4_0c serpentine_300px_0
 X14 connect4_1 connect5_0 connect4_1c connect5_0c serpentine_300px_0
 X15 connect5_1 connect6_0 connect5_1c connect6_0c serpentine_300px_0
 X16 connect3_1 connect6_1 connect7_0 connect3_1c connect6_1c connect7_0c diffmix_25px_0
-X17 connect7_1 out connect7_1c outc serpentine_300px_0
+X17 connect7_1 0 connect7_1c outc serpentine_300px_0
 
 .tran 0.01ms 1ms
