@@ -20,9 +20,15 @@ for i in range(1,4):
 
     TRdata.append(df)
 
-    print(df.columns)
+    #print(df.columns)
 
-    TR_c.append(df.loc[:0, outputC])
+    TR_c.append(df.loc[0, outputC])
 
-    
+
+total_C = sum(TR_c)
+
+TR_c_r  = TR_c/total_C
+
+print(TR_c) 
+print(TR_c_r)     
 pass
