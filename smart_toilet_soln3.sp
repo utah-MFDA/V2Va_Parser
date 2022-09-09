@@ -1,6 +1,7 @@
 * Converted from verilog for microfluidic simulation
 
 .option post=1
+.option POST_VERSION=2001
 
 .hdl ./../component_library/VerilogA/Elibrary/standardCells/Evalve_20px_1.va
 .hdl ./../component_library/VerilogA/Elibrary/standardCells/Eserpentine_25px_0.va

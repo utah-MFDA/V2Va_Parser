@@ -1,4 +1,5 @@
 * Converted from verilog for microfluidic simulation
 
 .option post=1
+.option POST_VERSION=2001
 
