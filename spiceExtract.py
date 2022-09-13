@@ -8,7 +8,7 @@ import pandas as pd
 TRdata = []
 TR_c   = []
 
-outputC = " v_outc"
+outputC = " v_outc0"
 
 for i in range(1,4):
     inputFileBase = "./smart_toilet_soln"+str(i)+"/smart_toilet_soln" + str(i) + "_o.tr0"

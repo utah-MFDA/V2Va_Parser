@@ -121,7 +121,7 @@ for soln in solnDF.iterrows():
             for out in outputLine.replace(' ', '').split(','):
                 outputWords.append(out)
 
-                VA_line_str += 'X' + str(numberOfComponents) + ' ' + str(out) + '_0 ' + str(out) + '_0c 0 outc' + str(outNum) + ' Channel length='
+                VA_line_str += 'X' + str(numberOfComponents) + ' ' + str(out) + '_ch ' + str(out) + '_chC 0 outc' + str(outNum) + ' Channel length='
                 outNum += 1
                 # add output wire
                 row = wireLenDF.loc[wireLenDF['wire'] == out]
@@ -202,9 +202,12 @@ for soln in solnDF.iterrows():
                         VA_line_str_chem += str(p) + '_' + str(wireList[p]) + 'c '
                         wireList[p] += 1
                     else:
-                        if p in outputWords or inputList:
+                        if p in inputList:
                             VA_line_str += str(p) + '_1 '
                             VA_line_str_chem += str(p) + '_1c '
+                        if p in outputWords:
+                            VA_line_str += str(p) + '_ch '
+                            VA_line_str_chem += str(p) + '_chC '
                         else:
                             VA_line_str += str(p) + ' '
                             VA_line_str_chem += str(p) + 'c '
