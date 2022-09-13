@@ -205,7 +205,7 @@ for soln in solnDF.iterrows():
                         if p in inputList:
                             VA_line_str += str(p) + '_1 '
                             VA_line_str_chem += str(p) + '_1c '
-                        if p in outputWords:
+                        elif p in outputWords:
                             VA_line_str += str(p) + '_ch '
                             VA_line_str_chem += str(p) + '_chC '
                         else:
