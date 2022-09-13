@@ -108,7 +108,7 @@ for soln in solnDF.iterrows():
                 # get wire length fro wire length file
                 row = wireLenDF.loc[wireLenDF['wire'] == p]
                 wireLength = row.iloc[0,1]
-                VA_line_str += str(wireLength) + '\n'
+                VA_line_str += str(wireLength) + 'm\n'
 
                 inputList.append(p)
 
@@ -126,7 +126,7 @@ for soln in solnDF.iterrows():
                 # add output wire
                 row = wireLenDF.loc[wireLenDF['wire'] == out]
                 wireLength = row.iloc[0,1]
-                VA_line_str += str(wireLength) + '\n'
+                VA_line_str += str(wireLength) + 'm\n'
 
                 numberOfComponents += 1
 
@@ -150,7 +150,7 @@ for soln in solnDF.iterrows():
 
                 wireLength = row.iloc[0,1]
 
-                VA_line_str += str(wireLength) + '\n'
+                VA_line_str += str(wireLength) + 'm\n'
 
                 outFile_sp
 
