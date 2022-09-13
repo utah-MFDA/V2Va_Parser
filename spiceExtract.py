@@ -27,7 +27,7 @@ for i in range(1,4):
 
 total_C = sum(TR_c)
 
-TR_c_r  = TR_c/total_C
+TR_c_r  = TR_c/total_C * 100
 
 print(TR_c) 
 print(TR_c_r)     

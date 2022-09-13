@@ -54,8 +54,11 @@ for soln in solnDF.iterrows():
 
     numberOfComponents = 0
     currentLine = ''
+    # wire list used to keep track of number of connections
     wireList    = {}
+    inputList   = []
     outputWords = []
+    outNum      = 0
     probeList   = {}
 
 
@@ -91,10 +94,24 @@ for soln in solnDF.iterrows():
             # we will assume pressure pumping devices
             params = line.replace('input ', '').replace(' ', '').split(',')
             for p in params:
-                VA_line_str += 'X' + str(numberOfComponents) + ' ' + str(p) + ' ' + str(p) + 'c PressurePump pressure=100k '
+                VA_line_str += 'X' + str(numberOfComponents) + ' ' + str(p) + '_0 ' + str(p) + '_0c PressurePump pressure=100k '
                 if str(p) == soln[1].loc['inlet']:
                     VA_line_str += 'chemConcentration=' + str(soln[1].loc['solutionC']) + ' '
                 VA_line_str += '\n'
+                numberOfComponents += 1
+
+                
+
+            # build init lines for inputs
+            for p in params:
+                VA_line_str += 'X' + str(numberOfComponents) + ' ' + str(p) + '_0 ' + str(p) + '_0c ' + str(p) + '_1 ' + str(p) + '_1c Channel length='
+                # get wire length fro wire length file
+                row = wireLenDF.loc[wireLenDF['wire'] == p]
+                wireLength = row.iloc[0,1]
+                VA_line_str += str(wireLength) + '\n'
+
+                inputList.append(p)
+
                 numberOfComponents += 1
             
             VA_line_str += '\n'
@@ -103,6 +120,15 @@ for soln in solnDF.iterrows():
             outputLine = line.replace('output ', '')
             for out in outputLine.replace(' ', '').split(','):
                 outputWords.append(out)
+
+                VA_line_str += 'X' + str(numberOfComponents) + ' ' + str(out) + '_0 ' + str(out) + '_0c 0 outc' + str(outNum) + ' Channel length='
+                outNum += 1
+                # add output wire
+                row = wireLenDF.loc[wireLenDF['wire'] == out]
+                wireLength = row.iloc[0,1]
+                VA_line_str += str(wireLength) + '\n'
+
+                numberOfComponents += 1
 
         elif vars == 'module':
             pass
@@ -176,11 +202,12 @@ for soln in solnDF.iterrows():
                         VA_line_str_chem += str(p) + '_' + str(wireList[p]) + 'c '
                         wireList[p] += 1
                     else:
-                        if p in outputWords:
-                            VA_line_str += '0 '
+                        if p in outputWords or inputList:
+                            VA_line_str += str(p) + '_1 '
+                            VA_line_str_chem += str(p) + '_1c '
                         else:
                             VA_line_str += str(p) + ' '
-                        VA_line_str_chem += str(p) + 'c '
+                            VA_line_str_chem += str(p) + 'c '
 
                 # probes for mixer
                 #if vars == 'diffmix_25px_0':
