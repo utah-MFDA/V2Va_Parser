@@ -104,7 +104,7 @@ for soln in solnDF.iterrows():
 
             # build init lines for inputs
             for p in params:
-                VA_line_str += 'X' + str(numberOfComponents) + ' ' + str(p) + '_0 ' + str(p) + '_0c ' + str(p) + '_1 ' + str(p) + '_1c Channel length='
+                VA_line_str += 'X' + str(numberOfComponents) + ' ' + str(p) + '_0 ' + str(p) + '_1  ' + str(p) + '_0c ' + str(p) + '_1c Channel length='
                 # get wire length fro wire length file
                 row = wireLenDF.loc[wireLenDF['wire'] == p]
                 wireLength = row.iloc[0,1]
@@ -121,12 +121,12 @@ for soln in solnDF.iterrows():
             for out in outputLine.replace(' ', '').split(','):
                 outputWords.append(out)
 
-                VA_line_str += 'X' + str(numberOfComponents) + ' ' + str(out) + '_ch ' + str(out) + '_chC 0 outc' + str(outNum) + ' Channel length='
+                VA_line_str += 'X' + str(numberOfComponents) + ' ' + str(out) + '_ch 0  ' + str(out) + '_chC outc' + str(outNum) + ' Channel length='
                 outNum += 1
                 # add output wire
                 row = wireLenDF.loc[wireLenDF['wire'] == out]
                 wireLength = row.iloc[0,1]
-                VA_line_str += str(wireLength) + 'm\n'
+                VA_line_str += str(wireLength) + 'm\n\n'
 
                 numberOfComponents += 1
 

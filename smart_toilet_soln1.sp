@@ -23,11 +23,12 @@
 X0 soln1_0 soln1_0c PressurePump pressure=100k chemConcentration=100 
 X1 soln2_0 soln2_0c PressurePump pressure=100k 
 X2 soln3_0 soln3_0c PressurePump pressure=100k 
-X3 soln1_0 soln1_0c soln1_1 soln1_1c Channel length=7.65m
-X4 soln2_0 soln2_0c soln2_1 soln2_1c Channel length=3.24m
-X5 soln3_0 soln3_0c soln3_1 soln3_1c Channel length=5.71m
+X3 soln1_0 soln1_1  soln1_0c soln1_1c Channel length=7.65m
+X4 soln2_0 soln2_1  soln2_0c soln2_1c Channel length=3.24m
+X5 soln3_0 soln3_1  soln3_0c soln3_1c Channel length=5.71m
 
-X6 out_ch out_chC 0 outc0 Channel length=5.9m
+X6 out_ch 0  out_chC outc0 Channel length=5.9m
+
 X7 connect1_0 connect1_1  connect1_0c connect1_1c  Channel length=1.18m
 X8 connect2_0 connect2_1  connect2_0c connect2_1c  Channel length=1.18m
 X9 connect3_0 connect3_1  connect3_0c connect3_1c  Channel length=2.15m
