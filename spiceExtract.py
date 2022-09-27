@@ -5,30 +5,37 @@ from hspiceParser import import_export
 import numpy as np
 import pandas as pd
 
-TRdata = []
-TR_c   = []
+def spiceExtract():
+    TRdata = []
+    TR_c   = []
 
-outputC = " v_outc0"
+    outputC = " v_outc0"
 
-for i in range(1,4):
-    inputFileBase = "./smart_toilet_soln"+str(i)+"/smart_toilet_soln" + str(i) + "_o.tr0"
-    csvFile= "./smart_toilet_soln"+str(i)+"/smart_toilet_soln" + str(i) + "_o_tr0.csv"
+    solnFilePath = './'
+    solnFileName = 'smart_toilet_soln'
 
-    import_export(inputFileBase, "csv")
+    for i in range(1,4):
+        inputFileBase = solnFilePath + solnFileName +str(i)+"/"+ solnFileName + str(i) + "_o.tr0"
+        csvFile= solnFilePath + solnFileName +str(i)+"/"+ solnFileName + str(i) + "_o_tr0.csv"
 
-    df = pd.read_csv(csvFile, delimiter = ",")
+        import_export(inputFileBase, "csv")
 
-    TRdata.append(df)
+        df = pd.read_csv(csvFile, delimiter = ",")
 
-    #print(df.columns)
+        TRdata.append(df)
 
-    TR_c.append(df.loc[0, outputC])
+        #print(df.columns)
+
+        TR_c.append(df.loc[0, outputC])
 
 
-total_C = sum(TR_c)
+    total_C = sum(TR_c)
 
-TR_c_r  = TR_c/total_C * 100
+    TR_c_r  = TR_c/total_C * 100
 
-print(TR_c) 
-print(TR_c_r)     
-pass
+    print(TR_c) 
+    print(TR_c_r)     
+    pass
+
+if __name__ == "__main__":
+    spiceExtract()
