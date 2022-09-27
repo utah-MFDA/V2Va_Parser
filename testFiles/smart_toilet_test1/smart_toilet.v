@@ -24,7 +24,7 @@ diffmix_25px_0      mix0    (.a_fluid(soln1), .b_fluid(connect2), .out_fluid(con
 serpentine_300px_0  serp3   (.in_fluid(soln3), .out_fluid(connect4));
 serpentine_300px_0  serp4   (.in_fluid(connect4), .out_fluid(connect5));
 serpentine_300px_0  serp5   (.in_fluid(connect5), .out_fluid(connect6));
-// serpentine_300px_0  serp6   (.in_fluid(connect6), .out_fluid(connect8));
+serpentine_300px_0  serp6   (.in_fluid(connect6), .out_fluid(connect8));
 // serpentine_300px_0  serp7   (.in_fluid(connect8), .out_fluid(connect9));
 // serpentine_300px_0  serp8   (.in_fluid(connect9), .out_fluid(connect10));
 // serpentine_300px_0  serp9   (.in_fluid(connect10), .out_fluid(connect11));
