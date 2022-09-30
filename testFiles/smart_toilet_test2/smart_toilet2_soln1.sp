@@ -4,20 +4,20 @@
 .option post=2
 .option POST_VERSION=2001
 
-.hdl ./../component_library/VerilogA/Elibrary/standardCells/Evalve_20px_1.va
-.hdl ./../component_library/VerilogA/Elibrary/standardCells/Eserpentine_25px_0.va
-.hdl ./../component_library/VerilogA/Elibrary/standardCells/Eserpentine_50px_0.va
-.hdl ./../component_library/VerilogA/Elibrary/standardCells/Eserpentine_75px_0.va
-.hdl ./../component_library/VerilogA/Elibrary/standardCells/Eserpentine_100px_0.va
-.hdl ./../component_library/VerilogA/Elibrary/standardCells/Eserpentine_150px_0.va
-.hdl ./../component_library/VerilogA/Elibrary/standardCells/Eserpentine_200px_0.va
-.hdl ./../component_library/VerilogA/Elibrary/standardCells/Eserpentine_300px_0.va
-.hdl ./../component_library/VerilogA/Elibrary/standardCells/Ediffmix_25px_0.va
+.hdl ~/Github/component_library/VerilogA/Elibrary/standardCells/Evalve_20px_1.va
+.hdl ~/Github/component_library/VerilogA/Elibrary/standardCells/Eserpentine_25px_0.va
+.hdl ~/Github/component_library/VerilogA/Elibrary/standardCells/Eserpentine_50px_0.va
+.hdl ~/Github/component_library/VerilogA/Elibrary/standardCells/Eserpentine_75px_0.va
+.hdl ~/Github/component_library/VerilogA/Elibrary/standardCells/Eserpentine_100px_0.va
+.hdl ~/Github/component_library/VerilogA/Elibrary/standardCells/Eserpentine_150px_0.va
+.hdl ~/Github/component_library/VerilogA/Elibrary/standardCells/Eserpentine_200px_0.va
+.hdl ~/Github/component_library/VerilogA/Elibrary/standardCells/Eserpentine_300px_0.va
+.hdl ~/Github/component_library/VerilogA/Elibrary/standardCells/Ediffmix_25px_0.va
 
 *hard coded EChannel, used for wires
-.hdl ./../component_library/VerilogA/Elibrary/EChannel.va
+.hdl ~/Github/component_library/VerilogA/Elibrary/EChannel.va
 *hard coded Pressure Pump, used for wires
-.hdl ./../component_library/VerilogA/Elibrary/EPrPump.va
+.hdl ~/Github/component_library/VerilogA/Elibrary/EPrPump.va
 
 
 X0 soln1_0 soln1_0c PressurePump pressure=100k chemConcentration=100 

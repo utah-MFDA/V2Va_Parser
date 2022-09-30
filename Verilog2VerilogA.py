@@ -16,6 +16,8 @@ template file, or -mfsp; this adds additional start and ending file information
 
 def Verilog2VerilogA(inputVerilogFile, outputVerilogFile=None):
 
+
+    inputVerilogFile = inputVerilogFile.replace('\\', '/')
     # input file declaration
     #inFile_Verilog = "smart_toilet.v"
     inFile_Verilog = inputVerilogFile
@@ -38,8 +40,8 @@ def Verilog2VerilogA(inputVerilogFile, outputVerilogFile=None):
 
     # local library location for testing
 
-    libraryPath = "./../component_library/VerilogA/Elibrary/standardCells/"
-    libraryPath2= "./../component_library/VerilogA/Elibrary/"
+    libraryPath = "~/Github/component_library/VerilogA/Elibrary/standardCells/"
+    libraryPath2= "~/Github/component_library/VerilogA/Elibrary/"
 
     # open files
 
