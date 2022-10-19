@@ -46,7 +46,7 @@ def Verilog2VerilogA(inputVerilogFile, outputVerilogFile=None):
     # open files
 
     Vfile = open(inFile_Verilog)
-    SPfile= open(outFile_sp, '+w')
+    #SPfile= open(outFile_sp, '+w')
     iExp  = open(initExpress)
     eExp  = open(endExpress)
 
