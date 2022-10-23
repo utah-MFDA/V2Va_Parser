@@ -3,6 +3,7 @@
 import sys
 import pandas as pd
 import re
+import json
 
 """
 input arguments
@@ -14,7 +15,7 @@ library file, or -lib; this can be written into the vmf file
 template file, or -mfsp; this adds additional start and ending file information
 """
 
-def Verilog2VerilogA(inputVerilogFile, outputVerilogFile=None):
+def Verilog2VerilogA(inputVerilogFile, configFile, solnFile, outputVerilogFile=None):
 
 
     inputVerilogFile = inputVerilogFile.replace('\\', '/')
@@ -26,13 +27,13 @@ def Verilog2VerilogA(inputVerilogFile, outputVerilogFile=None):
     #print(inFile_lengths)
 
     library_csv =    "StandardCellLibrary.csv"
-    solnFile       = "solutionFile.csv"
 
     # output file declaration
     if outputVerilogFile == None:
         outFile_sp     = inFile_Verilog[:-2] + '.sp'
 
     # files for start and ending expressions
+    #configFile     = "VMF_template.mfsp"
     initExpress    = "initExpression_V2VA"
     endExpress     = "endExpression_V2VA"
 
@@ -47,8 +48,13 @@ def Verilog2VerilogA(inputVerilogFile, outputVerilogFile=None):
 
     Vfile = open(inFile_Verilog)
     #SPfile= open(outFile_sp, '+w')
-    iExp  = open(initExpress)
-    eExp  = open(endExpress)
+    with open(configFile, 'r') as f:
+        configFile = json.load(f)
+
+    #print(configFile["START"])
+
+    iExp  = configFile["START"]
+    eExp  = configFile["END"]
 
     # Load standard cell library
 
@@ -63,14 +69,15 @@ def Verilog2VerilogA(inputVerilogFile, outputVerilogFile=None):
 
     for soln in solnDF.iterrows():
         Vfile = open(inFile_Verilog)
-        iExp  = open(initExpress)
-        eExp  = open(endExpress)
+        #iExp  = open(initExpress)
+        #eExp  = open(endExpress)
 
         SP_outputFile_name = inFile_Verilog[:-2] + '_' + soln[1].loc['inlet'] + '.sp'
 
         SPfile = open(SP_outputFile_name, '+w')
         
-        SPfile.write(''.join(iExp.readlines()))
+        #SPfile.write(''.join(iExp.readlines()))
+        SPfile.write(iExp)
 
         createSpiceRunScript(SP_outputFile_name[:-3], numSoln)
         numSoln += 1
@@ -265,7 +272,8 @@ def Verilog2VerilogA(inputVerilogFile, outputVerilogFile=None):
             # refresh line every pass
             currentLine = ''
 
-        SPfile.write(''.join(eExp.readlines()))
+        #SPfile.write(''.join(eExp.readlines()))
+        SPfile.write(eExp)
 
     
 
@@ -299,6 +307,8 @@ def createSpiceRunScript(outputFileName, numSoln):
 
 if __name__ == "__main__":
     #inV = sys.argv[1]
-    inV = '.\\testFiles\\smart_toilet_test2\\smart_toilet2.v'
+    inV      = '.\\testFiles\\smart_toilet_test2\\smart_toilet2.v'
+    confFile = "./VMF_template.mfsp"
+    solnFile = "solutionFile.csv"
 
-    Verilog2VerilogA(inV)
+    Verilog2VerilogA(inV, confFile, solnFile)

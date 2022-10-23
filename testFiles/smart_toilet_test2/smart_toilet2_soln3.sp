@@ -45,5 +45,4 @@ X19 connect4_1 connect5_0 connect4_1c connect5_0c serpentine_300px_0
 X20 connect5_1 connect6_0 connect5_1c connect6_0c serpentine_300px_0
 X21 connect3_1 connect6_1 connect7_0 connect3_1c connect6_1c connect7_0c diffmix_25px_0
 X22 connect7_1 out_ch connect7_1c out_chC serpentine_300px_0
-
 .tran 0.1ms 1ms

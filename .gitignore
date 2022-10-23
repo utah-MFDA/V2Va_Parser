@@ -7,3 +7,5 @@ sxcmd*
 *.ic*
 
 *.pa*
+
+src/sendFileHSpice.bash
