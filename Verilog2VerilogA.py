@@ -4,6 +4,7 @@ import sys
 import pandas as pd
 import re
 import json
+import os
 
 """
 input arguments
@@ -45,6 +46,7 @@ def Verilog2VerilogA(inputVerilogFile, configFile, solnFile, outputVerilogFile=N
     libraryPath2= "~/Github/component_library/VerilogA/Elibrary/"
 
     # open files
+    
 
     Vfile = open(inFile_Verilog)
     #SPfile= open(outFile_sp, '+w')
@@ -67,14 +69,36 @@ def Verilog2VerilogA(inputVerilogFile, configFile, solnFile, outputVerilogFile=N
     # used to keep track of appending to run sim file
     numSoln = 0
 
+    #SP_file_list = 
+    # write to spice files
+    # path/newfile/file.v
+    #SP_outputFile_name = inFile_Verilog[:-2] + '_' + soln[1].loc['inlet'] + '.sp'
+    SP_outputFile_pathA= inFile_Verilog.split('/')[:-1]
+    SP_outputFile_path = ""
+
+    for s in SP_outputFile_pathA: SP_outputFile_path += s + "/"
+
+    SP_outputFile_path = SP_outputFile_path + "spiceFiles/" 
+    SP_outputFile_name = SP_outputFile_path + inFile_Verilog.split('/')[-1]
+
+    if not os.path.exists(SP_outputFile_path):
+        os.mkdir(SP_outputFile_path)
+
+    SP_outputFile_list = SP_outputFile_path + "spiceList"
+    SP_list = open(SP_outputFile_list, 'w')
+
     for soln in solnDF.iterrows():
         Vfile = open(inFile_Verilog)
         #iExp  = open(initExpress)
         #eExp  = open(endExpress)
 
-        SP_outputFile_name = inFile_Verilog[:-2] + '_' + soln[1].loc['inlet'] + '.sp'
+        # write to spice files
+        # path/newfile/file.v
+        SP_outputFile_name_new = SP_outputFile_name[:-2] + '_' + soln[1].loc['inlet'] + '.sp'
+                
+        SPfile = open(SP_outputFile_name_new, '+w')
 
-        SPfile = open(SP_outputFile_name, '+w')
+        SP_list.write(SP_outputFile_name_new + '\n')
         
         #SPfile.write(''.join(iExp.readlines()))
         SPfile.write(iExp)

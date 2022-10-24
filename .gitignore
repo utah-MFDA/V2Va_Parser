@@ -9,3 +9,4 @@ sxcmd*
 *.pa*
 
 src/sendFileHSpice.bash
+src/sendFileHSpice_temp.bash
