@@ -1,5 +1,6 @@
 import subprocess
 import Verilog2VerilogA
+import spiceExtract
 
 def buildSPfile(fullFilePath, configFile, solnFile, remoteTestPath):
     print("\n\nstart builing sp file\n")
@@ -13,6 +14,7 @@ def sendFiles(filePath, fullPath, localPathRoute):
     remoteShellScript = "./src/sendFileHSpice.bash".replace("./", localPathRoute)
 
     # read list file
+    # the spiceFiles is created by the V2Va parser
     spiceFilePath = fullPath + '/spiceFiles/spiceList'
     spiceListFile = open(spiceFilePath)
 
@@ -45,6 +47,7 @@ def runSimFiles(filePath, localPathRoute):
 
 def downloadFiles(filePath, fullPath, localPathRoute):
     
+    # the spiceFiles is created by the V2Va parser
     spiceFilePath = fullPath + '/spiceFiles/spiceList'
     spiceListFile = open(spiceFilePath)
 
@@ -62,6 +65,13 @@ def downloadFiles(filePath, fullPath, localPathRoute):
 
     print("Done getting files")
 
+def extractChemData(fullPath):
+
+    print("\nExtracting data\n\n")
+
+    spiceExtract.parseSpiceOut(fullPath + '/spiceFiles/', "spiceList")
+
+    print("\nDone extracting data\n\n")
 
 # main -------------------------------------------
 
@@ -93,4 +103,8 @@ if __name__ == "__main__":
     #runSimFiles(fullPath, localPathRoute)
 
     # get files from remote server
-    downloadFiles(filePath, fullPath, localPathRoute)
+    #downloadFiles(filePath, fullPath, localPathRoute)
+
+    # run file extraction
+    extractChemData(fullPath)
+    

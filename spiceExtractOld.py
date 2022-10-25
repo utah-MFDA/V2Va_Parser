@@ -5,20 +5,18 @@ from hspiceParser import import_export
 import numpy as np
 import pandas as pd
 
-
-def parseSpiceOut(filePath, fileList):
+def spiceExtract():
     TRdata = []
     TR_c   = []
 
-    # for single output this is the output port
     outputC = " v_outc0"
 
-    spOutList = open(filePath + fileList)
+    solnFilePath = './'
+    solnFileName = 'smart_toilet_soln'
 
-    for line in spOutList:
-        line = line.replace("\n", "")
-        inputFileBase = line.replace(".sp", "_o.tr0")
-        csvFile= line.replace(".sp", "_o_tr0.csv")
+    for i in range(1,4):
+        inputFileBase = solnFilePath + solnFileName +str(i)+"/"+ solnFileName + str(i) + "_o.tr0"
+        csvFile= solnFilePath + solnFileName +str(i)+"/"+ solnFileName + str(i) + "_o_tr0.csv"
 
         import_export(inputFileBase, "csv")
 
@@ -38,3 +36,6 @@ def parseSpiceOut(filePath, fileList):
     print(TR_c) 
     print(TR_c_r)     
     pass
+
+if __name__ == "__main__":
+    spiceExtract()
