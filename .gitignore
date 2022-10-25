@@ -13,6 +13,9 @@ sxcmd*
 *.sp
 *spiceList
 *.tr*
+*_tr0.csv
+*runSims.csh
+*spiceFiles*
 
 src/sendFileHSpice.bash
 src/sendFileHSpice_temp.bash
