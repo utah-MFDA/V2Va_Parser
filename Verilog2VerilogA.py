@@ -16,7 +16,7 @@ library file, or -lib; this can be written into the vmf file
 template file, or -mfsp; this adds additional start and ending file information
 """
 
-def Verilog2VerilogA(inputVerilogFile, configFile, solnFile, outputVerilogFile=None):
+def Verilog2VerilogA(inputVerilogFile, configFile, solnFile, remoteTestPath, outputVerilogFile=None):
 
 
     inputVerilogFile = inputVerilogFile.replace('\\', '/')
@@ -26,6 +26,7 @@ def Verilog2VerilogA(inputVerilogFile, configFile, solnFile, outputVerilogFile=N
     #inFile_lengths = "smart_toilet_lengths.xlsx"
     inFile_lengths = inputVerilogFile[:-2] + "_lengths.xlsx"
     #print(inFile_lengths)
+    #remoteTestPath = "~/Verilog_Tests/"
 
     library_csv =    "StandardCellLibrary.csv"
 
@@ -103,7 +104,7 @@ def Verilog2VerilogA(inputVerilogFile, configFile, solnFile, outputVerilogFile=N
         #SPfile.write(''.join(iExp.readlines()))
         SPfile.write(iExp)
 
-        createSpiceRunScript(SP_outputFile_name[:-3], numSoln)
+        createSpiceRunScript(SP_outputFile_name_new[:-3], numSoln, remoteTestPath)
         numSoln += 1
 
         # import library files
@@ -301,7 +302,8 @@ def Verilog2VerilogA(inputVerilogFile, configFile, solnFile, outputVerilogFile=N
 
     
 
-def createSpiceRunScript(outputFileName, numSoln):
+def createSpiceRunScript(outputFileName, numSoln, remoteTestPath):
+    
     # make run spice file
 
     outputFileName = outputFileName.replace('\\', '/')
@@ -315,6 +317,7 @@ def createSpiceRunScript(outputFileName, numSoln):
     if numSoln == 0:
         simScript = open(outputPath + '/' + "runSims.csh", '+w')
         simScript.write('#/bin/tcsh\n\n')
+        simScript.write('cd ' + outputPath.replace('./', remoteTestPath) + "\n\n")
     else:
         simScript = open(outputPath + '/' + "runSims.csh", 'a')
     
@@ -325,8 +328,10 @@ def createSpiceRunScript(outputFileName, numSoln):
 
     # TODO put replace earlier
     o_soln_name = outputFileName
-    mkDirPhrase = "mkdir " + outputPath + o_soln_name + "\n"
-    spiceScriptPhrase = "hspice " + outputPath + o_soln_name + ".sp -o "  + outputPath  + o_soln_name + "/" + o_soln_name[rm_start:] + "_o\n\n"
+    #mkDirPhrase = "mkdir " + outputPath + o_soln_name + "\n"
+    #spiceScriptPhrase = "hspice " + outputPath + o_soln_name + ".sp -o "  + outputPath  + o_soln_name + "/" + o_soln_name[rm_start:] + "_o\n\n"
+    mkDirPhrase = "mkdir ./" + o_soln_name + "\n"
+    spiceScriptPhrase = "hspice -i ./"  + o_soln_name + ".sp -o ./"  + o_soln_name + "/" + o_soln_name[rm_start:] + "_o\n\n"
     simScript.write(mkDirPhrase + spiceScriptPhrase)
 
 if __name__ == "__main__":

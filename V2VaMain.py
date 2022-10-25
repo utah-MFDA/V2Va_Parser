@@ -1,43 +1,96 @@
 import subprocess
 import Verilog2VerilogA
 
+def buildSPfile(fullFilePath, configFile, solnFile, remoteTestPath):
+    print("\n\nstart builing sp file\n")
+
+    Verilog2VerilogA.Verilog2VerilogA(fullFilePath, configFile, solnFile, remoteTestPath)
+
+    print("\nend building sp file\n\n")
+
+def sendFiles(filePath, fullPath, localPathRoute):
+    # execute shell script
+    remoteShellScript = "./src/sendFileHSpice.bash".replace("./", localPathRoute)
+
+    # read list file
+    spiceFilePath = fullPath + '/spiceFiles/spiceList'
+    spiceListFile = open(spiceFilePath)
+
+    # Construct command path
+    #sendFileCommand = remoteShellScript + " " + fileName + " " + filePath
+    #sendFileCommand = sendFileCommand.replace("./", localPathRoute)
+
+    print("start send file\n")
+    for line in spiceListFile:
+        # Construct command path
+        line = line.replace('\n', '')
+        sendFileCommand = remoteShellScript + " " + line.split('/')[-1] + " " + fullPath + "/spiceFiles "# + filePath.replace('./', '')
+        #sendFileCommand = sendFileCommand     
+        subprocess.call(sendFileCommand, shell=True)
+    
+    sendFileCommand = remoteShellScript + " runSims.csh " + fullPath + "/spiceFiles " + filePath.replace('./', '')
+    #sendFileCommand = sendFileCommand     
+    subprocess.call(sendFileCommand, shell=True)
+
+    print("\nend send files\n\n")
+
+def runSimFiles(filePath, localPathRoute):
+    print("\nrun simulations\n")
+
+    runSimCommand = "./src/runSimsRemote.bash".replace("./", localPathRoute) + " " + filePath.replace('./', '') + "/spiceFiles"
+
+    subprocess.call(runSimCommand, shell=True)
+
+    print("\nend run simulations\n\n")
+
+def downloadFiles(filePath, fullPath, localPathRoute):
+    
+    spiceFilePath = fullPath + '/spiceFiles/spiceList'
+    spiceListFile = open(spiceFilePath)
+
+    getFileScript = "./src/getFileHSpice.bash ".replace("./", localPathRoute)
+    
+    print("\nDownloading file\n")
+    
+    for line in spiceListFile:
+        # Construct command path
+        line = line.replace('\n', '')
+        remotePath = fullPath.replace('./', '') + "/spiceFiles/" + line.split('/')[-1].replace(".sp", "") + ""
+        getFileCommand = getFileScript + line.split('/')[-1].replace(".sp", "_o") + " " + remotePath + " " + fullPath + "/spiceFiles " + fullPath + "/spiceFiles "# + filePath.replace('./', '')
+        #sendFileCommand = sendFileCommand     
+        subprocess.call(getFileCommand, shell=True)
+
+    print("Done getting files")
+
+
+# main -------------------------------------------
+
 if __name__ == "__main__":
     
+    localPathRoute = "./V2Va_Parser/"
+
     # construct file path
-    filePath = "./testFiles/smart_toilet_test2".replace("./", "./V2Va_Parser/")
+    filePath = "./testFiles/smart_toilet_test2"#.replace("./", "./V2Va_Parser/")
     fileName = "smart_toilet2.v"
 
-    fullFilePath = filePath + "/" + fileName
-    fullFilePath = fullFilePath#.replace("./", "./V2Va_Parser/")
+    fullPath     = filePath.replace("./", localPathRoute)
+    fullFilePath = fullPath + "/" + fileName
+    #fullFilePath = fullFilePath#.replace("./", "./V2Va_Parser/")
 
     configFile = "./V2Va_Parser/VMF_template.json"
 
     solnFile   = "./V2Va_Parser/testFiles/smart_toilet_test2/solutionFile.csv"
 
+    remoteTestPath = "~/Verilog_Tests/"
+
     # build sp file
+    #buildSPfile(fullFilePath, configFile, solnFile, remoteTestPath)
 
-    print("\n\nstart builing sp file\n")
-
-    Verilog2VerilogA.Verilog2VerilogA(fullFilePath, configFile, solnFile)
-
-    print("\nend building sp file\n\n")
-
-    pass
-
-    # execute shell script
-    remoteShellScript = "./src/sendFileHSpice.bash"
-
-    # read list file
-    spiceFilePath = filePath + '/spiceFiles/spiceList'
-    spiceListFile = open(spiceFilePath)
-
-    # Construct command path
-    sendFileCommand = remoteShellScript + " " + fileName + " " + filePath
-    sendFileCommand = sendFileCommand.replace("./", "./V2Va_Parser/")
-
-    print("start send file\n")
-    for line in spiceListFile:     
-        subprocess.call(sendFileCommand, shell=True)
+    # send files to remote server
+    #sendFiles(filePath, fullPath, localPathRoute)
     
-    print("\nend send file\n\n")
+    # run simulation files
+    #runSimFiles(fullPath, localPathRoute)
 
+    # get files from remote server
+    downloadFiles(filePath, fullPath, localPathRoute)
