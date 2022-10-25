@@ -12,6 +12,9 @@ sxcmd*
 *runSims.csh
 *.sp
 *spiceList
+*.tr*
 
 src/sendFileHSpice.bash
 src/sendFileHSpice_temp.bash
+src/getFileHSpice.bash
+src/runSimsRemote.bash
