@@ -16,18 +16,35 @@ library file, or -lib; this can be written into the vmf file
 template file, or -mfsp; this adds additional start and ending file information
 """
 
-def Verilog2VerilogA(inputVerilogFile, configFile, solnFile, remoteTestPath, libraryFile="", parser="XYCE", outputVerilogFile=None, runScipt=True):
-
+def Verilog2VerilogA(inputVerilogFile, 
+                     configFile, 
+                     solnFile, 
+                     remoteTestPath,    
+                     libraryFile=None,
+                     devFile=None, 
+                     length_file=None, 
+                     preRouteSim=False, 
+                     outputVerilogFile=None,
+                     parser="XYCE", 
+                     runScipt=True):
 
     inputVerilogFile = inputVerilogFile.replace('\\', '/')
     # input file declaration
     #inFile_Verilog = "smart_toilet.v"
     inFile_Verilog = inputVerilogFile
     #inFile_lengths = "smart_toilet_lengths.xlsx"
-    inFile_lengths = inputVerilogFile[:-2] + "_lengths.xlsx"
-    #print(inFile_lengths)
-    #remoteTestPath = "~/Verilog_Tests/"
-    if(libraryFile==""):
+    print('\n\n----------------------------------------------------------')
+    print("PreRoute:" + str(preRouteSim) + "")
+    print('----------------------------------------------------------\n\n')
+
+    if not preRouteSim:
+        if length_file == None:
+            inFile_lengths = inputVerilogFile[:-2] + "_lengths.xlsx"
+        else:
+            inFile_lengths = length_file
+ 
+    # import library file
+    if libraryFile==None:
         library_csv =    "StandardCellLibrary.csv"
     else:
         library_csv = libraryFile
@@ -46,10 +63,11 @@ def Verilog2VerilogA(inputVerilogFile, configFile, solnFile, remoteTestPath, lib
     # local library location for testing
 
     libraryPath = "~/Github/component_library/VerilogA/Elibrary/standardCells/"
-    libraryPath2= "~/Github/component_library/VerilogA/Elibrary/"
+    #libraryPath2= "~/Github/component_library/VerilogA/Elibrary/"
 
+    # --------------------------------------------------------------
     # open files
-    
+    # --------------------------------------------------------------
 
     Vfile = open(inFile_Verilog)
     #SPfile= open(outFile_sp, '+w')
@@ -64,7 +82,9 @@ def Verilog2VerilogA(inputVerilogFile, configFile, solnFile, remoteTestPath, lib
     # Load standard cell library
 
     library = pd.read_csv(library_csv)
-    wireLenDF = pd.read_excel(inFile_lengths)
+    wireLenDF = None
+    if not preRouteSim:
+        wireLenDF = pd.read_excel(inFile_lengths)
 
     # load solution concentrations
     solnDF = pd.read_csv(solnFile)
@@ -81,30 +101,49 @@ def Verilog2VerilogA(inputVerilogFile, configFile, solnFile, remoteTestPath, lib
 
     for s in SP_outputFile_pathA: SP_outputFile_path += s + "/"
 
-    SP_outputFile_path = SP_outputFile_path + "spiceFiles/" 
-    SP_outputFile_name = SP_outputFile_path + inFile_Verilog.split('/')[-1]
+    # load device file ------------------------------------
+    #devFile = SP_outputFile_path + "/devices.csv"
+    devDF = pd.read_csv(devFile)
+
+    if preRouteSim:
+        SP_outputFile_path = SP_outputFile_path + "spiceFiles/preRoute/" 
+        SP_outputFile_name = SP_outputFile_path + 'preR_' + inFile_Verilog.split('/')[-1]
+    else:
+        SP_outputFile_path = SP_outputFile_path + "spiceFiles/" 
+        SP_outputFile_name = SP_outputFile_path + inFile_Verilog.split('/')[-1]
 
     if not os.path.exists(SP_outputFile_path):
         os.mkdir(SP_outputFile_path)
 
     SP_outputFile_list = SP_outputFile_path + "spiceList"
     SP_list = open(SP_outputFile_list, 'w')
+    SP_list.write('OutputFile,Chemical,Outlets\n')
 
-    for soln in solnDF.iterrows():
+    # Create soln files
+    createChemSubArrays(solnDF)
+
+    #for soln in solnDF.iterrows():
+    for soln in solnDF.groupby(['Solution']):
         Vfile = open(inFile_Verilog)
         #iExp  = open(initExpress)
         #eExp  = open(endExpress)
 
+        chem = str(soln[0][0])
+        chemDF = soln[1]
+
         # write to spice files
         # path/newfile/file.v
         if(parser=="HSPICE"):
-            SP_outputFile_name_new = SP_outputFile_name[:-2] + '_' + soln[1].loc['inlet'] + '.sp'
+            #SP_outputFile_name_new = SP_outputFile_name[:-2] + '_' + soln[1].loc['inlet'] + '.sp'
+            SP_outputFile_name_new = SP_outputFile_name[:-2] + '_' + chem + '.sp'
         if(parser=="XYCE"):
-            SP_outputFile_name_new = SP_outputFile_name[:-2] + '_' + soln[1].loc['inlet'] + '.cir'
+            #SP_outputFile_name_new = SP_outputFile_name[:-2] + '_' + soln[1].loc['inlet'] + '.cir'
+            SP_outputFile_name_new = SP_outputFile_name[:-2] + '_' + chem + '.cir'
 
         SPfile = open(SP_outputFile_name_new, '+w')
 
-        SP_list.write(SP_outputFile_name_new + '\n')
+        SP_list.write(SP_outputFile_name_new)
+        SP_list.write(','+chem+',')
         
         #SPfile.write(''.join(iExp.readlines()))
         SPfile.write(iExp)
@@ -131,6 +170,7 @@ def Verilog2VerilogA(inputVerilogFile, configFile, solnFile, remoteTestPath, lib
         # get line
         for line_num, line in enumerate(Vfile):
 
+            # combines lines until end char
             if len(line) > 0 and not(line == '\n'):
                 if not line.rstrip()[-1] == ';':
                     # append to current line
@@ -156,6 +196,18 @@ def Verilog2VerilogA(inputVerilogFile, configFile, solnFile, remoteTestPath, lib
 
             if vars == 'input':
 
+                VA_line_str, numberOfComponents, inputList = parseInput(
+                    vars, 
+                    line, 
+                    numberOfComponents, 
+                    soln, 
+                    inputList, 
+                    wireLenDF,
+                    chemDF,
+                    devDF,
+                    preRouteSim=preRouteSim, 
+                    parser=parser)
+                """
                 # create pump devices
                 # we will assume pressure pumping devices
                 params = line.replace('input ', '').replace(' ', '').split(',')
@@ -170,16 +222,7 @@ def Verilog2VerilogA(inputVerilogFile, configFile, solnFile, remoteTestPath, lib
 
                 # build init lines for inputs
                 for p in params:
-
-                    VA_line_str, numberOfComponents, inputList = parseInput(
-                        vars, 
-                        line, 
-                        numberOfComponents, 
-                        soln,
-                        inputList,
-                        wireLenDF,
-                        parser=parser)
-                    """
+                    
                     VA_line_str += 'X' + str(numberOfComponents) + ' ' + str(p) + '_0 ' + str(p) + '_1  ' + str(p) + '_0c ' + str(p) + '_1c Channel length='
                     # get wire length fro wire length file
                     row = wireLenDF.loc[wireLenDF['wire'] == p]
@@ -201,7 +244,9 @@ def Verilog2VerilogA(inputVerilogFile, configFile, solnFile, remoteTestPath, lib
                     soln, 
                     outputWords, 
                     wireLenDF, 
-                    outNum, 
+                    SP_list,
+                    outNum,
+                    preRouteSim=preRouteSim,
                     parser=parser)
                 """
                 outputLine = line.replace('output ', '')
@@ -229,7 +274,8 @@ def Verilog2VerilogA(inputVerilogFile, configFile, solnFile, remoteTestPath, lib
                     line_num, 
                     wireList, 
                     wireLenDF, 
-                    numberOfComponents, 
+                    numberOfComponents,
+                    preRouteSim=preRouteSim,
                     parser=parser)
                 # create channel modules
                 """
@@ -346,26 +392,65 @@ def Verilog2VerilogA(inputVerilogFile, configFile, solnFile, remoteTestPath, lib
 
 """
 
-def parseInput(vars, line, numberOfComponents, soln, inputList, wireLenDF, parser="XYCE"):
+def parseInput(vars, 
+               line, 
+               numberOfComponents, 
+               soln, 
+               inputList, 
+               wireLenDF,
+               chemDF,
+               devDF,
+               preRouteSim=False, 
+               parser="XYCE"):
+    
     params = line.replace('input ', '').replace(' ', '').split(',')
 
     VA_line_str = ''
     
     if(parser=="HSPICE"):
         for p in params:
-            VA_line_str += 'X' + str(numberOfComponents) + ' ' + str(p) + '_0 ' + str(p) + '_0c PressurePump pressure=100k '
-            if str(p) == soln[1].loc['inlet']:
-                VA_line_str += 'chemConcentration=' + str(soln[1].loc['solutionC']) + ' '
+            df = chemDF.loc[chemDF['Inlet'] == p]
+            dev = devDF.loc[devDF['Inlet'] == p]['Device'].values[0]
+            devVars = devDF.loc[devDF['Inlet'] == p]['DevVars'].values[0] 
+            VA_line_str += 'X' + str(numberOfComponents) + ' ' +\
+                str(p) + '_0 ' + str(p) + '_0c ' +\
+                str(dev)  + ' ' + str(devVars) + ' '
+            if not df.empty:
+                VA_line_str += 'chemConcentration=' + str(df['InConcentration'].values[0]) + ' '
+            
+            #if str(p) == soln[1].loc['inlet']:
+            #   VA_line_str += 'chemConcentration=' + str(soln[1].loc['solutionC']) + ' '
             VA_line_str += '\n'
             numberOfComponents += 1
+
+        # build init lines for inputs
+        for p in params:
+            VA_line_str += 'X' + str(numberOfComponents) +\
+                ' ' + str(p) + '_0 ' + str(p) + '_1  ' +\
+                str(p) + '_0c ' + str(p) + '_1c Channel length='
+            
+            VA_line_str += getWireLength(wireLenDF, p, preRouteSim)
+
+            inputList.append(p)
+
+            numberOfComponents += 1
+        
+        VA_line_str += '\n'
 
     elif(parser=="XYCE"):
         for p in params:
             inputList.append(p)
+
+            df = chemDF.loc[chemDF['Inlet'] == p]
+            dev = devDF.loc[devDF['Inlet'] == p]['Device'].values[0]
+            devVars = devDF.loc[devDF['Inlet'] == p]['DevVars'].values[0] 
             
-            VA_line_str += 'YPressurePump ' + str(p) + ' ' + str(p) + '_0 ' + str(p) + '_0c pressure=100k '
-            if str(p) == soln[1].loc['inlet']:
-                VA_line_str += 'chemConcentration=' + str(soln[1].loc['solutionC']) + ' '
+            VA_line_str += 'YPressurePump ' + str(p) + ' ' +\
+                str(p) + '_0 ' + str(p) + '_0c '+\
+                str(dev)  + ' ' + str(devVars) + ' '
+            
+            if not df.empty:
+                VA_line_str += 'chemConcentration=' + str(df['InConcentration'].values[0]) + ' '
             VA_line_str += '\n'
             numberOfComponents += 1
 
@@ -383,7 +468,16 @@ def parseInput(vars, line, numberOfComponents, soln, inputList, wireLenDF, parse
 
 """
 
-def praseOutput(vars, line, numberOfComponents, soln, outputWords, wireLenDF, outNum, parser="XYCE"):
+def praseOutput(vars, 
+                line, 
+                numberOfComponents, 
+                soln, 
+                outputWords, 
+                wireLenDF, 
+                SP_list,
+                outNum,
+                preRouteSim=False,
+                parser="XYCE"):
     outputLine = line.replace('output ', '')
     VA_line_str = ''
 
@@ -391,12 +485,25 @@ def praseOutput(vars, line, numberOfComponents, soln, outputWords, wireLenDF, ou
         for out in outputLine.replace(' ', '').split(','):
             outputWords.append(out)
 
-            VA_line_str += 'X' + str(numberOfComponents) + ' ' + str(out) + '_ch 0  ' + str(out) + '_chC outc' + str(outNum) + ' Channel length='
+            pressureOut = '0'
+            pressureIn  = str(out) + '_ch'
+
+            chemIn  = str(out) + '_chC'
+            chemOut = 'outc' + str(outNum)
+
+            VA_line_str += 'X' + str(numberOfComponents) + ' ' + pressureIn + ' ' + pressureOut + ' ' + chemIn + ' ' + chemOut + ' Channel length='
             outNum += 1
+
+            # track output 
+            SP_list.write(chemOut + ';')
+
             # add output wire
-            row = wireLenDF.loc[wireLenDF['wire'] == out]
-            wireLength = row.iloc[0,1]
-            VA_line_str += str(wireLength) + 'm\n\n'
+            # row = wireLenDF.loc[wireLenDF['wire'] == out]
+            #row = wireLenDF.loc[wireLenDF.iloc[:,0] == out]
+            #wireLength = row.iloc[0,1]
+            #VA_line_str += str(wireLength) + 'm\n\n'
+
+            VA_line_str += getWireLength(wireLenDF, out, preRouteSim)
 
             numberOfComponents += 1
     
@@ -404,12 +511,20 @@ def praseOutput(vars, line, numberOfComponents, soln, outputWords, wireLenDF, ou
         for out in outputLine.replace(' ', '').split(','):
             outputWords.append(out)
 
-            VA_line_str += 'YChannel ' + str(out) + ' ' + str(out) + '_ch 0  ' + str(out) + '_chC outc' + str(outNum) + ' length='
+            pressureOut = '0'   
+            pressureIn  = str(out) + '_ch'
+
+            chemIn  = str(out) + '_chC'
+            chemOut = 'outc' + str(outNum)
+
+            VA_line_str += 'YChannel ' + pressureIn + ' ' + pressureOut + ' ' + chemIn + ' ' + chemOut +  ' length='
             outNum += 1
+
+            # track output 
+            SP_list.write(chemOut + ';')
+            
             # add output wire
-            row = wireLenDF.loc[wireLenDF['wire'] == out]
-            wireLength = row.iloc[0,1]
-            VA_line_str += str(wireLength) + 'm\n\n'
+            VA_line_str += getWireLength(wireLenDF, out, preRouteSim)
 
             numberOfComponents += 1
 
@@ -418,7 +533,14 @@ def praseOutput(vars, line, numberOfComponents, soln, outputWords, wireLenDF, ou
 
 """
 
-def parseWire(vars, line, line_num, wireList, wireLenDF, numberOfComponents, parser="XYCE"):
+def parseWire(vars, 
+              line, 
+              line_num, 
+              wireList, 
+              wireLenDF, 
+              numberOfComponents, 
+              preRouteSim=False,
+              parser="XYCE"):
     # create channel modules
     wires = line.replace('wire ', '').replace(' ', '').split(',')
 
@@ -433,29 +555,30 @@ def parseWire(vars, line, line_num, wireList, wireLenDF, numberOfComponents, par
             # string
             VA_line_str += 'X' + str(numberOfComponents) + ' ' + str(w) + '_0 ' + str(w) + '_1 ' + ' ' + str(w) + '_0c ' + str(w) + '_1c  ' + 'Channel length='
 
-            row = wireLenDF.loc[wireLenDF['wire'] == w]
+            VA_line_str += getWireLength(wireLenDF, w, preRouteSim)
 
-            wireLength = row.iloc[0,1]
-
-            VA_line_str += str(wireLength) + 'm\n'
+            #outFile_sp
 
             wireList[w] = 0
-
             numberOfComponents += 1
+
     if(parser=="XYCE"):
         init_wire_string = '*Declared wires'
 
         for w in wires:
             # get length of connection
 
+            wire_conn1 = str(w) + '_0'
+            wire_conn2 = str(w) + '_1'
+            wire_conn_chem_1 = str(w) + '_0c'
+            wire_conn_chem_2 = str(w) + '_1c'
+
             # string
-            VA_line_str += 'YChannel ' + str(w) + ' ' + str(w) + '_0 ' + str(w) + '_1 ' + ' ' + str(w) + '_0c ' + str(w) + '_1c  ' + ' length='
+            VA_line_str += 'YChannel ' + str(w) + ' ' +\
+                wire_conn1 + ' ' + wire_conn2 + ' ' +\
+                wire_conn_chem_1 + ' ' + wire_conn_chem_2 + ' length='
 
-            row = wireLenDF.loc[wireLenDF['wire'] == w]
-
-            wireLength = row.iloc[0,1]
-
-            VA_line_str += str(wireLength) + 'm\n'
+            VA_line_str += getWireLength(wireLenDF, w, preRouteSim)
 
             wireList[w] = 0
 
@@ -565,6 +688,29 @@ def parseSTDCell(vars, line, line_num, library, wireList, inputList, outputWords
 
         return '', numberOfComponents
 
+def getWireLength(wireLenDF, df_index, preRouteSim):
+    if not preRouteSim:
+        row = wireLenDF.loc[wireLenDF.iloc[:,0] == df_index]
+        wireLength = row.iloc[0,1]
+        #return str(wireLength) + 'm\n'
+        #VA_line_str += str(wireLength) + 'm\n'
+    else:
+        wireLength = 0.00001
+        #VA_line_str += str(wireLength) + 'm\n'
+
+    return str(wireLength) + 'm\n'
+
+def createChemSubArrays(solnDF):
+
+    #g = solnDF.groupby(['Solution'], group_keys=True).apply(lambda x:x)
+
+    #print(g)
+    pass
+    for g in solnDF.groupby(['Solution']):
+        pass
+        print(g)
+        g = g
+
 class simple_netlist:
     def __init__(self):
         self.inputList = []
@@ -644,8 +790,21 @@ if __name__ == "__main__":
     inV         = './testFiles/xyce_test_1/smart_toilet.v'
     confFile    = "./VMF_xyce.mfsp"
     libraryFile = "./../component_library/StandardCellLibrary.csv"
-    solnFile    = "./testFiles/xyce_test_1/solutionFile.csv"
+    solnFile    = "./testFiles/xyce_test_1/smart_toilet_spec.csv"
+    devFile     = "./testFiles/xyce_test_1/devices.csv"
     
     parser   = "XYCE"
 
-    Verilog2VerilogA(inV, confFile, solnFile, remoteTestPath="", libraryFile=libraryFile, parser=parser, runScipt=False)
+    Verilog2VerilogA(inputVerilogFile=inV, 
+                     configFile=confFile, 
+                     solnFile=solnFile, 
+                     remoteTestPath="",    
+                     libraryFile=libraryFile,
+                     devFile=devFile, 
+                     length_file=None, 
+                     preRouteSim=False, 
+                     outputVerilogFile=None,
+                     parser="XYCE", 
+                     runScipt=False)
+
+    #Verilog2VerilogA(inV, confFile, solnFile, remoteTestPath="", libraryFile=libraryFile, parser=parser, runScipt=False)
