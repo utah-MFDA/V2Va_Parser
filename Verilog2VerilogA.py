@@ -16,7 +16,7 @@ library file, or -lib; this can be written into the vmf file
 template file, or -mfsp; this adds additional start and ending file information
 """
 
-def Verilog2VerilogA(inputVerilogFile, configFile, solnFile, remoteTestPath, outputVerilogFile=None):
+def Verilog2VerilogA(inputVerilogFile, configFile, solnFile, remoteTestPath, libraryFile="", parser="XYCE", outputVerilogFile=None, runScipt=True):
 
 
     inputVerilogFile = inputVerilogFile.replace('\\', '/')
@@ -27,8 +27,10 @@ def Verilog2VerilogA(inputVerilogFile, configFile, solnFile, remoteTestPath, out
     inFile_lengths = inputVerilogFile[:-2] + "_lengths.xlsx"
     #print(inFile_lengths)
     #remoteTestPath = "~/Verilog_Tests/"
-
-    library_csv =    "StandardCellLibrary.csv"
+    if(libraryFile==""):
+        library_csv =    "StandardCellLibrary.csv"
+    else:
+        library_csv = libraryFile
 
     # output file declaration
     if outputVerilogFile == None:
@@ -95,8 +97,11 @@ def Verilog2VerilogA(inputVerilogFile, configFile, solnFile, remoteTestPath, out
 
         # write to spice files
         # path/newfile/file.v
-        SP_outputFile_name_new = SP_outputFile_name[:-2] + '_' + soln[1].loc['inlet'] + '.sp'
-                
+        if(parser=="HSPICE"):
+            SP_outputFile_name_new = SP_outputFile_name[:-2] + '_' + soln[1].loc['inlet'] + '.sp'
+        if(parser=="XYCE"):
+            SP_outputFile_name_new = SP_outputFile_name[:-2] + '_' + soln[1].loc['inlet'] + '.cir'
+
         SPfile = open(SP_outputFile_name_new, '+w')
 
         SP_list.write(SP_outputFile_name_new + '\n')
@@ -104,22 +109,14 @@ def Verilog2VerilogA(inputVerilogFile, configFile, solnFile, remoteTestPath, out
         #SPfile.write(''.join(iExp.readlines()))
         SPfile.write(iExp)
 
-        createSpiceRunScript(SP_outputFile_name_new[:-3], numSoln, remoteTestPath)
-        numSoln += 1
+        if(runScipt):
+            createSpiceRunScript(SP_outputFile_name_new[:-3], numSoln, remoteTestPath)
+            numSoln += 1
 
-        # import library files
-        for rowN, row in enumerate(library.iterrows()):
-            #if rowN == 0:
-            #    continue
-            rStr = row[1]['Standard_Cell']
-            libStr = '.hdl ' + libraryPath + 'E' + rStr + '.va\n'
-            SPfile.write(libStr)
-
-        SPfile.write('\n')
-
-        SPfile.write('*hard coded EChannel, used for wires\n' + '.hdl ' + libraryPath2 + "EChannel.va\n")
-        SPfile.write('*hard coded Pressure Pump, used for wires\n' + '.hdl ' + libraryPath2 + "EPrPump.va\n\n\n")
-
+        # import library files in sp scripts
+        if(parser=="HSPICE"):
+            hspice_lib_import(SPfile, library, libraryPath)
+            
         numberOfComponents = 0
         currentLine = ''
         # wire list used to keep track of number of connections
@@ -151,6 +148,7 @@ def Verilog2VerilogA(inputVerilogFile, configFile, solnFile, remoteTestPath, out
 
             # remove inital whitespace
             line = line.lstrip(' ').replace(';', '').replace('\n', '')
+            # split different variables for line
             vars = line.split(' ')[0]
         
             VA_line_str = ''
@@ -172,6 +170,16 @@ def Verilog2VerilogA(inputVerilogFile, configFile, solnFile, remoteTestPath, out
 
                 # build init lines for inputs
                 for p in params:
+
+                    VA_line_str, numberOfComponents, inputList = parseInput(
+                        vars, 
+                        line, 
+                        numberOfComponents, 
+                        soln,
+                        inputList,
+                        wireLenDF,
+                        parser=parser)
+                    """
                     VA_line_str += 'X' + str(numberOfComponents) + ' ' + str(p) + '_0 ' + str(p) + '_1  ' + str(p) + '_0c ' + str(p) + '_1c Channel length='
                     # get wire length fro wire length file
                     row = wireLenDF.loc[wireLenDF['wire'] == p]
@@ -181,10 +189,21 @@ def Verilog2VerilogA(inputVerilogFile, configFile, solnFile, remoteTestPath, out
                     inputList.append(p)
 
                     numberOfComponents += 1
+                    """
                 
                 VA_line_str += '\n'
 
             elif vars == 'output':
+                VA_line_str, numberOfComponents, outNum = praseOutput(
+                    vars, 
+                    line, 
+                    numberOfComponents, 
+                    soln, 
+                    outputWords, 
+                    wireLenDF, 
+                    outNum, 
+                    parser=parser)
+                """
                 outputLine = line.replace('output ', '')
                 for out in outputLine.replace(' ', '').split(','):
                     outputWords.append(out)
@@ -197,12 +216,23 @@ def Verilog2VerilogA(inputVerilogFile, configFile, solnFile, remoteTestPath, out
                     VA_line_str += str(wireLength) + 'm\n\n'
 
                     numberOfComponents += 1
+                """
 
             elif vars == 'module':
                 pass
             
             elif vars == 'wire':
+
+                VA_line_str, numberOfComponents = parseWire(
+                    vars, 
+                    line, 
+                    line_num, 
+                    wireList, 
+                    wireLenDF, 
+                    numberOfComponents, 
+                    parser=parser)
                 # create channel modules
+                """
                 wires = line.replace('wire ', '').replace(' ', '').split(',')
                 
                 #
@@ -220,12 +250,13 @@ def Verilog2VerilogA(inputVerilogFile, configFile, solnFile, remoteTestPath, out
 
                     VA_line_str += str(wireLength) + 'm\n'
 
-                    outFile_sp
+                    #outFile_sp
 
                     wireList[w] = 0
 
                     numberOfComponents += 1
                 #pass
+                """
             elif vars == 'endmodule':
                 pass
 
@@ -233,7 +264,17 @@ def Verilog2VerilogA(inputVerilogFile, configFile, solnFile, remoteTestPath, out
             # variable is a standard cell
             else:
                 #line_var = line.lstrip().split(' ')[0]
-
+                VA_line_str, numberOfComponents = parseSTDCell(
+                    vars, 
+                    line, 
+                    line_num, 
+                    library, 
+                    wireList, 
+                    inputList, 
+                    outputWords, 
+                    numberOfComponents, 
+                    parser=parser) 
+                """
                 # check if in library
                 if (library['Standard_Cell'].eq(vars)).any():
                     standardCell = vars[0]
@@ -291,7 +332,7 @@ def Verilog2VerilogA(inputVerilogFile, configFile, solnFile, remoteTestPath, out
 
                 else:
                     print("String: " + vars + " line number: " + str(line_num) + " not in library.")
-
+                """
             # Write line to file
             SPfile.write(VA_line_str)
             # refresh line every pass
@@ -300,7 +341,251 @@ def Verilog2VerilogA(inputVerilogFile, configFile, solnFile, remoteTestPath, out
         #SPfile.write(''.join(eExp.readlines()))
         SPfile.write(eExp)
 
+
+"""
+
+"""
+
+def parseInput(vars, line, numberOfComponents, soln, inputList, wireLenDF, parser="XYCE"):
+    params = line.replace('input ', '').replace(' ', '').split(',')
+
+    VA_line_str = ''
     
+    if(parser=="HSPICE"):
+        for p in params:
+            VA_line_str += 'X' + str(numberOfComponents) + ' ' + str(p) + '_0 ' + str(p) + '_0c PressurePump pressure=100k '
+            if str(p) == soln[1].loc['inlet']:
+                VA_line_str += 'chemConcentration=' + str(soln[1].loc['solutionC']) + ' '
+            VA_line_str += '\n'
+            numberOfComponents += 1
+
+    elif(parser=="XYCE"):
+        for p in params:
+            inputList.append(p)
+            
+            VA_line_str += 'YPressurePump ' + str(p) + ' ' + str(p) + '_0 ' + str(p) + '_0c pressure=100k '
+            if str(p) == soln[1].loc['inlet']:
+                VA_line_str += 'chemConcentration=' + str(soln[1].loc['solutionC']) + ' '
+            VA_line_str += '\n'
+            numberOfComponents += 1
+
+            VA_line_str += 'YChannel ' + str(p) + '_channel ' +\
+                str(p) + '_0 ' + str(p) + '_0c ' + \
+                str(p) + '_1 ' + str(p) + '_1c length='
+            row = wireLenDF.loc[wireLenDF['wire'] == p]
+            wireLength = row.iloc[0,1]
+            VA_line_str += str(wireLength) + 'm\n\n'
+
+
+    return VA_line_str, numberOfComponents, inputList
+
+"""
+
+"""
+
+def praseOutput(vars, line, numberOfComponents, soln, outputWords, wireLenDF, outNum, parser="XYCE"):
+    outputLine = line.replace('output ', '')
+    VA_line_str = ''
+
+    if(parser=="HSPICE"):
+        for out in outputLine.replace(' ', '').split(','):
+            outputWords.append(out)
+
+            VA_line_str += 'X' + str(numberOfComponents) + ' ' + str(out) + '_ch 0  ' + str(out) + '_chC outc' + str(outNum) + ' Channel length='
+            outNum += 1
+            # add output wire
+            row = wireLenDF.loc[wireLenDF['wire'] == out]
+            wireLength = row.iloc[0,1]
+            VA_line_str += str(wireLength) + 'm\n\n'
+
+            numberOfComponents += 1
+    
+    if(parser=="XYCE"):
+        for out in outputLine.replace(' ', '').split(','):
+            outputWords.append(out)
+
+            VA_line_str += 'YChannel ' + str(out) + ' ' + str(out) + '_ch 0  ' + str(out) + '_chC outc' + str(outNum) + ' length='
+            outNum += 1
+            # add output wire
+            row = wireLenDF.loc[wireLenDF['wire'] == out]
+            wireLength = row.iloc[0,1]
+            VA_line_str += str(wireLength) + 'm\n\n'
+
+            numberOfComponents += 1
+
+    return VA_line_str, numberOfComponents, outNum
+"""
+
+"""
+
+def parseWire(vars, line, line_num, wireList, wireLenDF, numberOfComponents, parser="XYCE"):
+    # create channel modules
+    wires = line.replace('wire ', '').replace(' ', '').split(',')
+
+    VA_line_str = ''
+
+    if(parser=="HSPICE"):
+        init_wire_string = '*Declared wires'
+
+        for w in wires:
+            # get length of connection
+
+            # string
+            VA_line_str += 'X' + str(numberOfComponents) + ' ' + str(w) + '_0 ' + str(w) + '_1 ' + ' ' + str(w) + '_0c ' + str(w) + '_1c  ' + 'Channel length='
+
+            row = wireLenDF.loc[wireLenDF['wire'] == w]
+
+            wireLength = row.iloc[0,1]
+
+            VA_line_str += str(wireLength) + 'm\n'
+
+            wireList[w] = 0
+
+            numberOfComponents += 1
+    if(parser=="XYCE"):
+        init_wire_string = '*Declared wires'
+
+        for w in wires:
+            # get length of connection
+
+            # string
+            VA_line_str += 'YChannel ' + str(w) + ' ' + str(w) + '_0 ' + str(w) + '_1 ' + ' ' + str(w) + '_0c ' + str(w) + '_1c  ' + ' length='
+
+            row = wireLenDF.loc[wireLenDF['wire'] == w]
+
+            wireLength = row.iloc[0,1]
+
+            VA_line_str += str(wireLength) + 'm\n'
+
+            wireList[w] = 0
+
+            numberOfComponents += 1
+
+    return VA_line_str, numberOfComponents
+    #pass
+
+
+"""
+inputs :
+vars - input variables 
+line - line string
+library - library database (pandas)
+"""
+def parseSTDCell(vars, line, line_num, library, wireList, inputList, outputWords, numberOfComponents, parser="XYCE"):
+    if (library['Standard_Cell'].eq(vars)).any():
+        
+        # var 0 should be module name
+        standardCell = vars
+        cellName     = line.split(' ')[1]
+    
+        ioPara = ''.join(line.replace('  ', ' ').split(' ')[2:])
+
+        # initialize variables
+        io_expression = False
+        connectionWord= False
+        portPhrase = ''
+        ports      = []
+        VA_line_str = ''
+
+        # get named ios
+        for char in ioPara:
+            if not io_expression and not connectionWord and char == '.':
+                io_expression = True
+            elif io_expression and not connectionWord and char == '(':
+                #Start connection word
+                io_expression = False
+                connectionWord = True
+            elif not io_expression and connectionWord and char == ')':
+                #end of port word
+                io_expression = False
+                connectionWord= False
+                ports.append(portPhrase)
+                portPhrase = ''
+            elif not io_expression and connectionWord:
+                portPhrase += char
+
+        # Generate sting for var
+
+        if(parser=="HSPICE"):
+            VA_line_str += 'X' + str(numberOfComponents) + ' '
+            VA_line_str_chem = ''
+
+            for p in ports:
+                if p in wireList.keys():
+                    VA_line_str += str(p) + '_' + str(wireList[p]) + ' '
+                    VA_line_str_chem += str(p) + '_' + str(wireList[p]) + 'c '
+                    wireList[p] += 1
+                else:
+                    if p in inputList:
+                        VA_line_str += str(p) + '_1 '
+                        VA_line_str_chem += str(p) + '_1c '
+                    elif p in outputWords:
+                        VA_line_str += str(p) + '_ch '
+                        VA_line_str_chem += str(p) + '_chC '
+                    else:
+                        VA_line_str += str(p) + ' '
+                        VA_line_str_chem += str(p) + 'c '
+            
+            VA_line_str += VA_line_str_chem + vars + '\n'
+
+        elif(parser=="XYCE"):
+            VA_line_str += 'Y' + standardCell + ' ' + cellName + ' '
+            # + str(numberOfComponents) + ' '
+            VA_line_str_chem = ''
+
+            for p in ports:
+                if p in wireList.keys():
+                    VA_line_str += str(p) + '_' + str(wireList[p]) + ' '
+                    VA_line_str_chem += str(p) + '_' + str(wireList[p]) + 'c '
+                    wireList[p] += 1
+                else:
+                    if p in inputList:
+                        VA_line_str += str(p) + '_1 '
+                        VA_line_str_chem += str(p) + '_1c '
+                    elif p in outputWords:
+                        VA_line_str += str(p) + '_ch '
+                        VA_line_str_chem += str(p) + '_chC '
+                    else:
+                        VA_line_str += str(p) + ' '
+                        VA_line_str_chem += str(p) + 'c '
+
+            VA_line_str += VA_line_str_chem + '\n'
+
+        # probes for mixer
+        #if vars == 'diffmix_25px_0':
+            
+        #    probeList['X'+str(numberOfComponents)]
+
+        numberOfComponents += 1
+
+        return VA_line_str, numberOfComponents
+
+    else:
+        print("String: " + vars + " line number: " + str(line_num) + " not in library.")
+
+        return '', numberOfComponents
+
+class simple_netlist:
+    def __init__(self):
+        self.inputList = []
+        self.outputList = []
+        self.wireList = []
+
+    def loadStdCellLibrary(lib_file):
+        pass
+
+    def isInput(in_str):
+        pass
+
+    def isOutput(out_str):
+        pass
+
+    def isWire(wire_str):
+        pass
+
+    def getWireLength(wire_str):
+        pass
+
 
 def createSpiceRunScript(outputFileName, numSoln, remoteTestPath):
     
@@ -334,10 +619,33 @@ def createSpiceRunScript(outputFileName, numSoln, remoteTestPath):
     spiceScriptPhrase = "hspice -i ./"  + o_soln_name + ".sp -o ./"  + o_soln_name + "/" + o_soln_name[rm_start:] + "_o\n\n"
     simScript.write(mkDirPhrase + spiceScriptPhrase)
 
+def hspice_lib_import(SPfile, library, libraryPath):
+    for rowN, row in enumerate(library.iterrows()):
+        #if rowN == 0:
+        #    continue
+        rStr = row[1]['Standard_Cell']
+        libStr = '.hdl ' + libraryPath + 'E' + rStr + '.va\n'
+        SPfile.write(libStr)
+
+    SPfile.write('\n')
+
+    SPfile.write('*hard coded EChannel, used for wires\n' + '.hdl ' + libraryPath2 + "EChannel.va\n")
+    SPfile.write('*hard coded Pressure Pump, used for wires\n' + '.hdl ' + libraryPath2 + "EPrPump.va\n\n\n")
+
+
+
 if __name__ == "__main__":
     #inV = sys.argv[1]
-    inV      = '.\\testFiles\\smart_toilet_test2\\smart_toilet2.v'
-    confFile = "./VMF_template.mfsp"
-    solnFile = "solutionFile.csv"
+    #inV      = '.\\testFiles\\smart_toilet_test2\\smart_toilet2.v'
+    #confFile = "./VMF_template.mfsp"
+    #solnFile = "solutionFile.csv"
+    
+    # Xyce test 1
+    inV         = './testFiles/xyce_test_1/smart_toilet.v'
+    confFile    = "./VMF_xyce.mfsp"
+    libraryFile = "./../component_library/StandardCellLibrary.csv"
+    solnFile    = "./testFiles/xyce_test_1/solutionFile.csv"
+    
+    parser   = "XYCE"
 
-    Verilog2VerilogA(inV, confFile, solnFile)
+    Verilog2VerilogA(inV, confFile, solnFile, remoteTestPath="", libraryFile=libraryFile, parser=parser, runScipt=False)
