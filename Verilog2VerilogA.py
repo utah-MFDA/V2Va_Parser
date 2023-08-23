@@ -22,7 +22,8 @@ def Verilog2VerilogA(inputVerilogFile,
                      remoteTestPath,    
                      libraryFile=None,
                      devFile=None, 
-                     length_file=None, 
+                     length_file=None,
+                     timeFile=None,
                      preRouteSim=False, 
                      outputVerilogFile=None,
                      parser="XYCE", 
@@ -69,6 +70,7 @@ def Verilog2VerilogA(inputVerilogFile,
     # open files
     # --------------------------------------------------------------
 
+    # Verilog file
     Vfile = open(inFile_Verilog)
     #SPfile= open(outFile_sp, '+w')
     with open(configFile, 'r') as f:
@@ -79,18 +81,24 @@ def Verilog2VerilogA(inputVerilogFile,
     iExp  = configFile["START"]
     eExp  = configFile["END"]
 
-    # Load standard cell library
 
+    # Load standard cell library
     library = pd.read_csv(library_csv)
     wireLenDF = None
     if not preRouteSim:
         wireLenDF = pd.read_excel(inFile_lengths)
 
+
     # load solution concentrations
     solnDF = pd.read_csv(solnFile)
-
     # used to keep track of appending to run sim file
     numSoln = 0
+
+    # load device file ------------------------------------
+    devDF = pd.read_csv(devFile)
+
+    # load time file
+    timeDF = pd.read_csv(timeFile)
 
     #SP_file_list = 
     # write to spice files
@@ -101,9 +109,7 @@ def Verilog2VerilogA(inputVerilogFile,
 
     for s in SP_outputFile_pathA: SP_outputFile_path += s + "/"
 
-    # load device file ------------------------------------
-    #devFile = SP_outputFile_path + "/devices.csv"
-    devDF = pd.read_csv(devFile)
+    
 
     if preRouteSim:
         SP_outputFile_path = SP_outputFile_path + "spiceFiles/preRoute/" 
@@ -262,9 +268,14 @@ def Verilog2VerilogA(inputVerilogFile,
             # refresh line every pass
             currentLine = ''
 
+        SPfile.write(simulationTime(timeDF, outputWords))
+
         #SPfile.write(''.join(eExp.readlines()))
         SPfile.write(eExp)
 
+## -------------------------------------------------------------------------------------
+#   Smaller methods
+## -------------------------------------------------------------------------------------
 
 """
 
@@ -589,6 +600,30 @@ def createChemSubArrays(solnDF):
         print(g)
         g = g
 
+def simulationTime(timeDF, outputWords):
+
+    VA_line_str = '\n\n'
+
+    for sim in timeDF.iterrows():
+
+        #print(str(sim[1]["Simulation Type"]) )
+
+        if sim[1]["Simulation Type"] == "transient" or \
+            sim[1]["Simulation Type"] == "tran":
+
+            VA_line_str +=  ".tran " + sim[1]["Time Slice"] + ' ' + sim[1]["Duration"] + '\n'
+
+    for out in outputWords:
+
+        VA_line_str += ".print tran V(" + str(out) + "_chC)\n"
+
+    VA_line_str += ".end\n\n"
+
+    return VA_line_str
+
+    
+
+
 class simple_netlist:
     def __init__(self):
         self.inputList = []
@@ -653,8 +688,8 @@ def hspice_lib_import(SPfile, library, libraryPath):
 
     SPfile.write('\n')
 
-    SPfile.write('*hard coded EChannel, used for wires\n' + '.hdl ' + libraryPath2 + "EChannel.va\n")
-    SPfile.write('*hard coded Pressure Pump, used for wires\n' + '.hdl ' + libraryPath2 + "EPrPump.va\n\n\n")
+    SPfile.write('*hard coded EChannel, used for wires\n' + '.hdl ' + libraryPath + "EChannel.va\n")
+    SPfile.write('*hard coded Pressure Pump, used for wires\n' + '.hdl ' + libraryPath + "EPrPump.va\n\n\n")
 
 
 
@@ -670,6 +705,7 @@ if __name__ == "__main__":
     libraryFile = "./../component_library/StandardCellLibrary.csv"
     solnFile    = "./testFiles/xyce_test_1/smart_toilet_spec.csv"
     devFile     = "./testFiles/xyce_test_1/devices.csv"
+    timeFile    = "./testFiles/xyce_test_1/simTime.csv"
     
     parser   = "XYCE"
 
@@ -679,7 +715,8 @@ if __name__ == "__main__":
                      remoteTestPath="",    
                      libraryFile=libraryFile,
                      devFile=devFile, 
-                     length_file=None, 
+                     length_file=None,
+                     timeFile=timeFile,
                      preRouteSim=False, 
                      outputVerilogFile=None,
                      parser="XYCE", 
