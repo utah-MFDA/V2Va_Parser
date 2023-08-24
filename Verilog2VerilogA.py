@@ -147,8 +147,10 @@ def Verilog2VerilogA(inputVerilogFile,
             SP_outputFile_name_new = SP_outputFile_name[:-2] + '_' + chem + '.cir'
 
         SPfile = open(SP_outputFile_name_new, '+w')
-
-        SP_list.write(SP_outputFile_name_new)
+        if parser == "HSPICE":
+            SP_list.write(SP_outputFile_name_new)
+        elif parser == "XYCE":
+            SP_list.write(os.path.basename(SP_outputFile_name_new))
         SP_list.write(','+chem+',')
         
         #SPfile.write(''.join(iExp.readlines()))
@@ -336,14 +338,14 @@ def parseInput(vars,
             
             VA_line_str += 'YPressurePump ' + str(p) + ' ' +\
                 str(p) + '_0 ' + str(p) + '_0c '+\
-                str(dev)  + ' ' + str(devVars) + ' '
+                ' ' + str(devVars) + ' '
             
             if not df.empty:
                 VA_line_str += 'chemConcentration=' + str(df['InConcentration'].values[0]) + ' '
             VA_line_str += '\n'
             numberOfComponents += 1
 
-            VA_line_str += 'YChannel ' + str(p) + '_channel ' +\
+            VA_line_str += 'Ychannel ' + str(p) + '_channel ' +\
                 str(p) + '_0 ' + str(p) + '_0c ' + \
                 str(p) + '_1 ' + str(p) + '_1c length='
             row = wireLenDF.loc[wireLenDF['wire'] == p]
@@ -400,17 +402,19 @@ def praseOutput(vars,
         for out in outputLine.replace(' ', '').split(','):
             outputWords.append(out)
 
+            outName = "output"+str(outNum)
+
             pressureOut = '0'   
             pressureIn  = str(out) + '_ch'
 
             chemIn  = str(out) + '_chC'
             chemOut = 'outc' + str(outNum)
 
-            VA_line_str += 'YChannel ' + pressureIn + ' ' + pressureOut + ' ' + chemIn + ' ' + chemOut +  ' length='
+            VA_line_str += 'Ychannel '+ outName + ' ' + pressureIn + ' ' + pressureOut + ' ' + chemIn + ' ' + chemOut +  ' length='
             outNum += 1
 
             # track output 
-            SP_list.write(chemOut + ';')
+            SP_list.write(chemOut + '\n')
             
             # add output wire
             VA_line_str += getWireLength(wireLenDF, out, preRouteSim)
@@ -463,7 +467,7 @@ def parseWire(vars,
             wire_conn_chem_2 = str(w) + '_1c'
 
             # string
-            VA_line_str += 'YChannel ' + str(w) + ' ' +\
+            VA_line_str += 'Ychannel ' + str(w) + ' ' +\
                 wire_conn1 + ' ' + wire_conn2 + ' ' +\
                 wire_conn_chem_1 + ' ' + wire_conn_chem_2 + ' length='
 
@@ -488,7 +492,8 @@ def parseSTDCell(vars, line, line_num, library, wireList, inputList, outputWords
         
         # var 0 should be module name
         standardCell = vars
-        cellName     = line.split(' ')[1]
+        
+        line = ' '.join(line.split())
     
         ioPara = ''.join(line.replace('  ', ' ').split(' ')[2:])
 
@@ -541,6 +546,8 @@ def parseSTDCell(vars, line, line_num, library, wireList, inputList, outputWords
             VA_line_str += VA_line_str_chem + vars + '\n'
 
         elif(parser=="XYCE"):
+            cellName  = line.split(' ')[1]
+
             VA_line_str += 'Y' + standardCell + ' ' + cellName + ' '
             # + str(numberOfComponents) + ' '
             VA_line_str_chem = ''
@@ -691,6 +698,85 @@ def hspice_lib_import(SPfile, library, libraryPath):
     SPfile.write('*hard coded EChannel, used for wires\n' + '.hdl ' + libraryPath + "EChannel.va\n")
     SPfile.write('*hard coded Pressure Pump, used for wires\n' + '.hdl ' + libraryPath + "EPrPump.va\n\n\n")
 
+def convert_nodes_2_numbers_xyce(SPfile):
+    if os.path.isfile(SPfile) and SPfile[-4:]==".cir":
+        SPfile = [SPfile]
+    else:
+        SPfile = [f for f in os.listdir(SPfile) if os.path.isfile(os.path.join(SPfile, f)) and f[-4:]==".cir"]
+
+    for f in SPfile:
+        SPfile_o = open(f, 'r')
+
+        new_file = f+'.num'
+        SPfile_n = open(new_file, 'w')
+
+        nodeList = {}
+
+        for line in SPfile_o:
+            # remove leading WS
+            line = line.rstrip()
+
+            # remove comments
+            line = line.split('*')[0]
+            line_comment = ''.join(line.split('*')[1:])
+
+            
+
+
+            if line == "" or line == "\n":
+                SPfile_n.write(line + line_comment+'\n')
+            else:
+                line_vars = line.replace('  ', ' ').split(' ')
+                if len(line_vars) > 1:
+                    arg1 = line_vars[0]
+                    end_line_str = []
+                    line_nodes = []
+                    # xyce command start with .
+                    if arg1[0] == ".":
+                        for ind, param in enumerate(line_vars[1:]):
+                            for n in nodeList.keys():
+                                if n in param:
+                                    n_num = str(nodeList[n])
+                                    rplace_str = '('+n+')'
+                                    newParam = param.replace('('+n+')', '('+n_num+')')
+                                    line_vars[ind+1] = newParam
+                        new_sp_line = ' '.join(line_vars)+'\n'
+                    else:
+                        # replaces params for numbers
+                        # <device> <name>
+                        device = [arg1, line_vars[1]]
+                        for param in line_vars[2:]:
+                            # exception for parameters which will explicitly use =
+                            if "=" in param:
+                                end_line_str += [param]
+                            elif param == '0':
+                                line_nodes.append(0)
+                            else:
+                                if param not in nodeList.keys():
+                                    # we do not want 0
+                                    nodeList[param] = len(nodeList)+1
+                                line_node = nodeList[param]
+                                line_nodes.append(line_node)
+                    # append all
+                        new_sp_line = ' '.join(
+                            device+
+                            [str(x) for x in line_nodes]+
+                            end_line_str
+                            )+'\n'
+                    
+                    SPfile_n.write(new_sp_line+line_comment)
+                else:
+                    SPfile_n.write(line + line_comment+'\n')
+
+        SPfile_o.close()
+        SPfile_n.close()
+
+        
+
+
+
+
+
 
 
 if __name__ == "__main__":
@@ -721,5 +807,9 @@ if __name__ == "__main__":
                      outputVerilogFile=None,
                      parser="XYCE", 
                      runScipt=False)
+    
+    convert_test_file = "./testFiles/xyce_test_1/"
+
+    convert_nodes_2_numbers_xyce(convert_test_file)
 
     #Verilog2VerilogA(inV, confFile, solnFile, remoteTestPath="", libraryFile=libraryFile, parser=parser, runScipt=False)
