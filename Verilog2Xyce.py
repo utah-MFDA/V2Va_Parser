@@ -15,6 +15,8 @@ def Verilog2Xyce(
         preRouteSim=False, 
         outputVerilogFile=None, 
         runScipt=True):
+    
+    spiceOutputDir = os.path.dirname(os.path.relpath(inputVerilogFile)) + "/spiceFiles"
 
     Verilog2VerilogA.Verilog2VerilogA(inputVerilogFile, 
                      configFile, 
@@ -28,6 +30,22 @@ def Verilog2Xyce(
                      outputVerilogFile=outputVerilogFile,
                      parser="XYCE",
                      runScipt=runScipt)
+    
+    Verilog2VerilogA.convert_nodes_2_numbers_xyce(spiceOutputDir)
+
+    # remove .cir
+     
+    for f in os.listdir(spiceOutputDir):
+        if os.path.isfile(os.path.join(spiceOutputDir, f)) and f[-4:]==".cir":
+            f = '/'.join([spiceOutputDir,f])
+            os.remove(f)
+    
+    # rename .cir.num
+    
+    for f in os.listdir(spiceOutputDir):
+        if os.path.isfile(os.path.join(spiceOutputDir, f)) and f[-8:]==".cir.num":
+            f = '/'.join([spiceOutputDir,f])
+            os.rename(f, f[:-4])
     
 if __name__ == "__main__":
 

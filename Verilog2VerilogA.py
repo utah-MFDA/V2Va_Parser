@@ -702,7 +702,10 @@ def convert_nodes_2_numbers_xyce(SPfile):
     if os.path.isfile(SPfile) and SPfile[-4:]==".cir":
         SPfile = [SPfile]
     else:
-        SPfile = [f for f in os.listdir(SPfile) if os.path.isfile(os.path.join(SPfile, f)) and f[-4:]==".cir"]
+        # if directory is given
+        SPfile = ['/'.join([SPfile, f]) 
+                       for f in os.listdir(SPfile) 
+                       if os.path.isfile(os.path.join(SPfile, f)) and f[-4:]==".cir"]
 
     for f in SPfile:
         SPfile_o = open(f, 'r')
