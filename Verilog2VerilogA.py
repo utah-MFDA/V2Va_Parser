@@ -349,7 +349,11 @@ def parseInput(vars,
                 str(p) + '_0 ' + str(p) + '_0c ' + \
                 str(p) + '_1 ' + str(p) + '_1c length='
             row = wireLenDF.loc[wireLenDF['wire'] == p]
-            wireLength = row.iloc[0,1]
+            try:
+                wireLength = row.iloc[0,1]
+            except IndexError:
+                raise IndexError("Unable to parse wires: is "+p+" in list?")
+
             VA_line_str += str(wireLength) + 'm\n\n'
 
 

@@ -34,12 +34,18 @@ def Verilog2Xyce(
     Verilog2VerilogA.convert_nodes_2_numbers_xyce(spiceOutputDir)
 
     # remove .cir
-     
+    
+    """
     for f in os.listdir(spiceOutputDir):
         if os.path.isfile(os.path.join(spiceOutputDir, f)) and f[-4:]==".cir":
             f = '/'.join([spiceOutputDir,f])
             os.remove(f)
-    
+    """
+    for f in os.listdir(spiceOutputDir):
+        if os.path.isfile(os.path.join(spiceOutputDir, f)) and f[-4:]==".cir":
+            f = '/'.join([spiceOutputDir,f])
+            os.rename(f, f+".str")
+
     # rename .cir.num
     
     for f in os.listdir(spiceOutputDir):
