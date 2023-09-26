@@ -622,7 +622,7 @@ def simulationTime(timeDF, outputWords):
         if sim[1]["Simulation Type"] == "transient" or \
             sim[1]["Simulation Type"] == "tran":
 
-            VA_line_str +=  ".tran " + sim[1]["Time Slice"] + ' ' + sim[1]["Duration"] + '\n'
+            VA_line_str +=  ".tran " + str(sim[1]["Time Slice"]) + ' ' + str(sim[1]["Duration"]) + '\n'
 
     for out in outputWords:
 
