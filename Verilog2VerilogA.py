@@ -18,12 +18,12 @@ template file, or -mfsp; this adds additional start and ending file information
 
 def Verilog2VerilogA(inputVerilogFile, 
                      configFile, 
-                     solnFile, 
+                     solnDF, 
                      remoteTestPath,    
                      libraryFile=None,
-                     devFile=None, 
+                     devDF=None, 
                      length_file=None,
-                     timeFile=None,
+                     timeDF=None,
                      preRouteSim=False, 
                      outputVerilogFile=None,
                      parser="XYCE", 
@@ -87,18 +87,21 @@ def Verilog2VerilogA(inputVerilogFile,
     wireLenDF = None
     if not preRouteSim:
         wireLenDF = pd.read_excel(inFile_lengths)
+        # Catches unnamed wire length column
+        if wireLenDF.columns.tolist()[0] == 'Unnamed: 0':
+            wireLenDF=wireLenDF.rename(columns={'Unnamed: 0':'wire'})
 
 
     # load solution concentrations
-    solnDF = pd.read_csv(solnFile)
+    #solnDF = pd.read_csv(solnFile)
     # used to keep track of appending to run sim file
     numSoln = 0
 
     # load device file ------------------------------------
-    devDF = pd.read_csv(devFile)
+    #devDF = pd.read_csv(devFile)
 
     # load time file
-    timeDF = pd.read_csv(timeFile)
+    #timeDF = pd.read_csv(timeFile)
 
     #SP_file_list = 
     # write to spice files
@@ -346,8 +349,8 @@ def parseInput(vars,
             numberOfComponents += 1
 
             VA_line_str += 'Ychannel ' + str(p) + '_channel ' +\
-                str(p) + '_0 ' + str(p) + '_0c ' + \
-                str(p) + '_1 ' + str(p) + '_1c length='
+                str(p) + '_0 ' + str(p) + '_1 ' + \
+                str(p) + '_0c ' + str(p) + '_1c length='
             row = wireLenDF.loc[wireLenDF['wire'] == p]
             try:
                 wireLength = row.iloc[0,1]
