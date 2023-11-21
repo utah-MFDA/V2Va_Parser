@@ -778,6 +778,10 @@ def convert_nodes_2_numbers_xyce(SPfile):
                 else:
                     SPfile_n.write(line + line_comment+'\n')
 
+        node_file = f+'.nodes'
+        with open(node_file, 'w') as node_f:
+            json.dump(nodeList, node_f)
+
         SPfile_o.close()
         SPfile_n.close()
 
