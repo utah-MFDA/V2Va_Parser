@@ -1,0 +1,7 @@
+{
+    "START": 
+    "* Converted from verilog for microfluidic simulation\n\n"
+    ,
+    "END" : 
+    "*.tran 0.1ms 1ms"
+}
