@@ -2,6 +2,7 @@
 import os
 
 from . import Verilog2VerilogA
+from . import SpiceParser
 
 import pandas as pd
 
@@ -21,23 +22,28 @@ sim_name, type, time, slice
 
 """
 
+#Verilog2VerilogA
+
 def Verilog2Xyce(
         inputVerilogFile, 
-        configFile, 
+        configFile, # used for header and footer of spice file
         solnFile, 
         remoteTestPath,    
         libraryFile=None,
         devDF=None, 
         length_file=None,
         timeDF=None,
+        probeList=None,
         preRouteSim=False, 
         outputVerilogFile=None, 
         runScipt=True):
     
     spiceOutputDir = os.path.dirname(os.path.relpath(inputVerilogFile)) + "/spiceFiles"
     
-
-    Verilog2VerilogA.Verilog2VerilogA(inputVerilogFile, 
+    
+    #Verilog2VerilogA.Verilog2VerilogA(
+    SpiceParser.Parse_Verilog(
+                     inputVerilogFile, 
                      configFile, 
                      solnFile, 
                      remoteTestPath,    
@@ -47,10 +53,12 @@ def Verilog2Xyce(
                      timeDF=timeDF,
                      preRouteSim=preRouteSim, 
                      outputVerilogFile=outputVerilogFile,
+                     probeList=probeList,
                      parser="XYCE",
                      runScipt=runScipt)
     
-    Verilog2VerilogA.convert_nodes_2_numbers_xyce(spiceOutputDir)
+    #Verilog2VerilogA.convert_nodes_2_numbers_xyce(spiceOutputDir)
+    SpiceParser.convert_nodes_2_numbers_xyce(spiceOutputDir)
 
     # remove .cir
     
@@ -103,6 +111,7 @@ def Verilog2Xyce_from_csv(
         devDF, 
         length_file,
         timeDF,
+        None,
         preRouteSim, 
         outputVerilogFile, 
         runScipt)
@@ -117,6 +126,7 @@ def Verilog2Xyce_from_config(
         devList=None, 
         length_file=None,
         simTimesList=None,
+        simProbeList=None,
         preRouteSim=False, 
         outputVerilogFile=None, 
         runScipt=True):
@@ -168,6 +178,7 @@ def Verilog2Xyce_from_config(
         devDF, 
         length_file,
         timeDF,
+        simProbeList,
         preRouteSim, 
         outputVerilogFile, 
         runScipt)
